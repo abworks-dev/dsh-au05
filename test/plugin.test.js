@@ -21,6 +21,14 @@ test('official-format lazy module registers read-only composer decoration', asyn
     const result = Component({ sessionId: 'A', useSessionStatus: selector => selector(new Map([['A', state]])) });
     assert.equal(result[2], `AU05 preview · ${expected} · HID off`);
   }
+  const statuses = new Map([['B', { running: true }], ['A', { running: false }]]);
+  assert.equal(Component({ sessionId: 'A', useSessionStatus: selector => selector(statuses) })[2],
+    'AU05 preview · idle · HID off', 'never fall back to the first session');
+  const absent = Component({ sessionId: undefined, useSessionStatus: selector => selector(statuses) });
+  assert.equal(absent[2], 'AU05 preview · unknown · HID off', 'no explicit session means unknown');
+  assert.equal(absent[0], 'span');
+  assert.equal(Object.keys(absent[1]).some(name => /^on[A-Z]/.test(name)), false,
+    'read-only status exposes no input or approval event handler');
   assert.ok(!source.includes('fetch('), 'preview must not connect to a bridge');
 });
 test('plugin manifest points only at published files', async () => {

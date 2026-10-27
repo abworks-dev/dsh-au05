@@ -2,7 +2,7 @@
 
 **DSH 官方格式插件 ⇄ Windows 本机 HID 桥 ⇄ Ulanzi AU05 / VibeKey** 的开源方案与 mock-first 骨架。
 
-> 当前是 **设计与原型阶段，不是可直接控制 AU05 的驱动发布版**。已实现官方格式只读插件、模拟桥、控制租约/防重放策略模型与离线测试；尚未连接 Windows 实体 AU05、安装到真实 DSH、实现灯控或执行权限审批。不要据此购买设备或替换生产工作流。
+> 当前是 **只读验证与原型阶段，不是可直接控制 AU05 的驱动发布版**。已实现官方格式只读插件、模拟桥、输入解码和 Windows 只读 HID 诊断；本机 DSH 真实运行库的离线渲染/卸载检查已通过。三键与旋钮六类输入报告已在 Windows 真机观察到；物理动作精确计数、真实 GUI 安装与端到端集成仍待验收，灯控及实际审批均未启用。不要据此购买设备或替换生产工作流。
 
 ## 为什么分三层
 
@@ -11,7 +11,7 @@ DSH Web / Electron
   官方 Cordis 客户端插件：选中会话、状态、审批 UI、输入框
         ⇅ loopback HTTP + Bearer + fetch SSE（拟接入）
 本机桥：认证、独占租约、事件规范化、有限状态灯映射
-        ⇅ Windows vendor HID（待验证 / 未实现）
+        ⇅ Windows vendor HID（独立只读诊断已验；生产桥接待实现）
 AU05 USB 接收器（发射器本体通过 2.4 GHz 连接）
 ```
 
@@ -29,8 +29,8 @@ dsh-au05/
 │   ├── dsh-plugin/          官方 bundle：package.json / index.js / client.js / cordis.patch.yml
 │   └── core/               原创会话租约、快照、意图票据策略模型
 ├── apps/bridge/            Node 22+ 本机模拟 HTTP/SSE 桥；不含真实 HID 后端
-├── scripts/                mock 演示与发布前结构检查
-├── test/                   核心策略、桥安全、插件 API 形状测试
+├── scripts/                mock 演示、只读 HID 诊断、DSH 离线 runtime 验证与结构检查
+├── test/                   核心策略、桥安全、输入协议、只读安全及插件测试
 ├── docs/
 │   ├── architecture.md     组件、状态、按键语义、多会话决策
 │   ├── dsh-plugin.md       官方插件格式、真实 API、安装/卸载边界
@@ -69,7 +69,19 @@ npm run bridge:mock
 
 [插件包](packages/dsh-plugin/README.md) 的只读装饰显示当前 composer 所绑定会话的 `running` / `pendingInteraction`，没有 HID/网络/审批副作用。官方源码基线：`deepseek-ai/deepseek-harness@22ddee3792402c3e70ec5f86a63c3e3e895a2f60`。创建仓库时没有修改 DSH 安装目录、用户 profile 或安装插件。
 
-实际安装到测试 profile、DSH GUI 渲染与跨进程桥接 **待验收**，不能用 API double 测试冒充 GUI 兼容认证。官方格式与后续接入方式见 [DSH 说明](docs/dsh-plugin.md)。
+本机 DSH `0.2.1-rc.3` 的真实 loader、Cordis、React、renderer 已在隔离离线页面通过 **13 项断言**，详见 [runtime 验证](docs/plugin-runtime-validation.md)。会话数据仍为合成 fixture，真实 GUI/profile 安装、CSP/CORS 与跨进程桥接 **待验收**，不能把离线检查冒充 GUI 兼容认证。官方格式与后续接入方式见 [DSH 说明](docs/dsh-plugin.md)。
+
+## Windows 只读输入诊断
+
+要求 Windows、PowerShell 7 / .NET 6+；不需要 npm 原生 HID 依赖。
+
+```bash
+npm run hid:selftest
+npm run hid:list
+npm run hid:capture -- -Seconds 30
+```
+
+`selftest` 不接触设备；`list` 只查本地身份/caps；`capture` 只读精确 vendor collection，限时结束并输出脱敏白名单事件报告计数。**不会发送初始化、心跳、灯控、映射或 Feature/Output 报告**；不会监听其他键盘、注入按键或回答 DSH 审批。是否能收到事件必须实测，不能用合成协议包代替真机验收。运行前阅读 [只读验证记录与操作边界](docs/readonly-validation.md)。
 
 ## 目标与非目标
 
@@ -81,7 +93,7 @@ npm run bridge:mock
 
 ## 开发与发布
 
-本仓库是设计交付，不提供未经验证的可执行驱动下载。提交前运行测试与检查，不提交 `.local/`、token、真实会话 ID、设备序列号、原始键盘日志或抓到的私人对话。GitHub Actions 在 Windows / Linux、Node 22 / 24 上执行测试；本地通过不代表远端 CI 已通过。
+本仓库是设计与只读实验交付，不提供未经验证的可执行驱动下载。提交前运行测试与检查，不提交 `.local/`、token、真实会话 ID、设备序列号、原始键盘日志或抓到的私人对话。GitHub Actions 在 Windows / Linux、Node 22 / 24 上执行测试；本地通过不代表远端 CI 已通过。
 
 - [验证记录与验收](docs/validation.md)
 - [安全报告方式](SECURITY.md)

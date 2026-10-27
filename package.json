@@ -11,6 +11,9 @@
     "test": "node --test test/*.test.js",
     "check": "node scripts/check.mjs",
     "bridge:mock": "node apps/bridge/main.mjs",
-    "demo": "node scripts/demo.mjs"
+    "demo": "node scripts/demo.mjs",
+    "hid:list": "pwsh -NoLogo -NoProfile -File scripts/windows-hid-readonly.ps1 -Mode list",
+    "hid:capture": "pwsh -NoLogo -NoProfile -File scripts/windows-hid-readonly.ps1 -Mode capture",
+    "hid:selftest": "pwsh -NoLogo -NoProfile -File scripts/windows-hid-readonly.ps1 -Mode SelfTest"
   }
 }

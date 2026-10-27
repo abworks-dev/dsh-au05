@@ -1,6 +1,10 @@
 # 验证记录与验收
 
-## 本次交付状态（2026-10-27）
+## 当前补充验证（2026-10-28）
+
+本机 DSH 真实 runtime 的隔离离线页面已通过 13 项断言，**不等于真实 GUI 安装验收**；详见 [插件 runtime 报告](plugin-runtime-validation.md)。Windows 只读 HID 诊断、输入解密与最新真机结果见 [只读验证记录](readonly-validation.md)。灯控、设备初始化/映射写入、会话控制与审批始终未启用。
+
+## 初始 M0 交付记录（2026-10-27，截至首次提交）
 
 范围：官方源码契约核对、原创 mock 原型、目录/链接/许可/敏感信息检查。本地 Windows、Node v24.22.1：`npm test` **13/13 通过**；`npm run check` **31 个源文件检查通过**；`npm run demo` **通过并返回 executed=false**。Node 22 与 Linux 由 CI 待核验。首次测试中的伪 Host 用 fetch 被运行时重写，改成 node:http 真正发送伪造 Header 后确认返回 403；不是跳过安全断言。**从未在真实 DSH 安装/渲染此插件，从未打开 AU05 HID，从未写灯或执行审批。**
 
@@ -14,7 +18,7 @@ API 形状测试使用 VM + 手写 doubles，不代表 React/官方 module loade
 - SSE lease 隔离、官方 lazy-module 形状、selector 必填调用、状态优先级、发布包文件。
 - 全项目 JSON、UTF-8 replacement 字符、本地 Markdown 链接与基础敏感模式检查；不是完整供应链或密钥扫描。
 
-## 必须人工验收（均未执行）
+## 完整发布前人工验收（下表退出标准尚未全部达成）
 
 | Gate | 测试 | 通过证据 |
 |---|---|---|
@@ -31,7 +35,7 @@ API 形状测试使用 VM + 手写 doubles，不代表 React/官方 module loade
 
 ## 后续线缆测试清单
 
-标准 TEA KAT、64B 加密仅发 63B、有效参数 <=52B、ID/长度错误、残块不解密、reply-route 差异、nonce/slot/乱序/超时、重连 generation、按钮重复 down/up、1.5 秒内连续相同方向旋钮多刻度。当前没有 encoder/HID，因此这些测试尚不存在，不能把 core 的票据测试当协议覆盖。
+原 M0 清单：标准 TEA KAT、64B 加密仅发 63B、有效参数 <=52B、ID/长度错误、残块不解密、reply-route 差异、nonce/slot/乱序/超时、重连 generation、按钮重复 down/up、1.5 秒内连续相同方向旋钮多刻度。2026-10-28 已补输入侧 KAT、ID/长度/残块/未知值/连续相同旋钮报告测试与有限真机读取，详见 [只读记录](readonly-validation.md)。encoder、命令请求/回复、重连及物理动作精确计数仍未验收，不能把 core 的票据测试当协议覆盖。
 
 ## 发布结果
 

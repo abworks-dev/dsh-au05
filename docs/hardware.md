@@ -1,6 +1,6 @@
 # Windows AU05 硬件实现方案
 
-**状态：协议事实调研，零实体设备操作；本仓库未实现任何真实 HID I/O。** 不将社区源码一致视作多个独立硬件实验；固件差异必须验证。固定出处见 [sources.md](sources.md)。
+**状态（2026-10-28）：已添加 Windows 只读枚举/被动采集诊断与输入解码器；灯控、Feature/Output 报告和初始化写入均未实现。** 本机结果见 [只读验证记录](readonly-validation.md)。不将社区源码一致视作多个独立硬件实验；固件差异必须验证。固定出处见 [sources.md](sources.md)。
 
 ## 先识别正确的 collection
 
@@ -14,11 +14,11 @@
 
 Windows VibDock 在其 2026-10-19、固件 4.4.0 记录中见 MI_03、64B IN/OUT，不代表所有设备都相同；不硬编码 MI_03、完整路径或默认选第一台。多设备要求用户选择，设备被替换重新确认。不得在日志公开完整设备路径/序列号。
 
-## 编解码设计（后续原创实现，当前无 encoder）
+## 编解码设计（已实现输入解密，当前无生产 encoder）
 
 已审 MIT Windows/Swift 参考与社区协议描述：LE32 标准 TEA、32 轮、delta `0x9E3779B9`，固定公开协议 key words `[0xCAA5BACA, 0xBC2A8A6D, 0xCA5A9EBA, 0x9BB88BCA]`。这是协议常量，不是用户凭据，不提供身份安全。
 
-明文按 64B 零填充，header 四字节为 route/subsystem/command/direction；加密 64B 后只发前 63B。接收 63B 只能完整解密前 56B（七块），不得把末尾残块解释成有效参数；header 后有效参数最多 52B，超长拒绝而非静默截断。需要独立 KAT、捕获向量、长度与 malformed/fuzz 测试后才能加进发布代码。
+以下为通用命令格式（**不能套用于下面的输入事件**）：明文按 64B 零填充，header 四字节为 route/subsystem/command/direction；加密 64B 后只发前 63B。接收 63B 只能完整解密前 56B（七块），不得把末尾残块解释成有效参数；header 后有效参数最多 52B，超长拒绝而非静默截断。需要独立 KAT、捕获向量、长度与 malformed/fuzz 测试后才能加进发布代码。
 
 协议中的 nonce 回显握手不是本机 IPC 认证：dongle 请求/回复 route 可能都是 06，mic 01 回复可为 81；不能一律强制 route|0x80。一个设备一个 reader，一个串行 writer，一个在途请求；matcher 核 route、subsystem、command、direction、slot、nonce，事件单独分流。重连增加 generation，旧回包不能匹配新请求。
 
@@ -28,7 +28,9 @@ Windows VibDock 在其 2026-10-19、固件 4.4.0 记录中见 MI_03、64B IN/OUT
 
 社区与 Swift 有 vendor input callback 的真实代码：`8B/0B 10 [logical] [phase] [physical]...`，phase 在 `[3]`、physical 在 `[4]`；三键 0..2、旋钮按 3、右 4、左 5，旋转是脉冲。**这不是 Windows vendor 路径已验收的证明。** 社区 shortcut 槽 4/5 的左右顺序不同，不能共用 enum。
 
-P0 诊断只读枚举及被动监听，记录三键 down/up、长按、旋钮快转、重复包、是否同时输出标准键盘事件。若必须初始化写才能出事件，停止并先请求实验授权。若无法确认事件序号，不采用“同帧 1.5 秒去重”这种会吞真实旋钮刻度的策略；采用实测窄窗/状态机，并声明计数限制。
+现有 [Windows 诊断](../scripts/windows-hid-readonly.ps1) 要求 PowerShell 7 / .NET 6+，支持 `npm run hid:list`、`npm run hid:capture -- -Seconds 30` 与纯离线 `npm run hid:selftest`。只输出脱敏 collection 信息及白名单事件报告计数；不保存 raw/path/serial，不全局监听标准键盘。超时依赖正常驱动取消完成，不对内核卡死承诺硬实时退出。
+
+P0 诊断只读枚举及被动监听，人工核验三键 down/up、长按、旋钮快转、重复包、是否同时输出标准键盘事件。若必须初始化写才能出事件，停止并先请求实验授权。若无法确认事件序号，不采用“同帧 1.5 秒去重”这种会吞真实旋钮刻度的策略；采用实测窄窗/状态机，并声明计数限制。
 
 路线 A：Windows 真机证实 vendor 事件可靠后，使用 vendor callback；不全局键盘 hook。若依旧有标准键盘输出，需用户选择 neutral profile 或确认冲突，不能偷偷清原映射。
 

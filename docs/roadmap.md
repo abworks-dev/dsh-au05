@@ -16,7 +16,7 @@
 
 ## M2：Windows 只读 HID 能力闸门
 
-- 为经许可的实验添加可替换 adapter，先审 `node-hid`/HIDAPI 或选择 Rust Win32 单后端；固定版本和第三方许可。
+- 已为经许可的单接收器只读实验加入原创 PowerShell 7 + Win32 P/Invoke 诊断和独立 TEA decoder；生产 bridge adapter、原生依赖选型与打包仍未完成。最新实测见 [只读记录](readonly-validation.md)。
 - 枚举精确 collection/caps，用户确认设备；Studio 退出；不做自动 provisioning。
 - 实测 vendor 事件、重复包、旋钮方向、标准键盘同步输出、发射器在线/休眠、固件差异。
 - 退出标准：设备/固件/OS 日期化记录；若未观察到就报告该组合不支持，不外推全平台。
