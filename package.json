@@ -1,0 +1,16 @@
+{
+  "name": "dsh-au05",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Design-first Windows AU05 bridge and official-format DSH client plugin scaffold",
+  "license": "MIT",
+  "engines": { "node": ">=22" },
+  "workspaces": ["packages/dsh-plugin"],
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "check": "node scripts/check.mjs",
+    "bridge:mock": "node apps/bridge/main.mjs",
+    "demo": "node scripts/demo.mjs"
+  }
+}

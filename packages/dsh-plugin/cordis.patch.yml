@@ -1,0 +1,4 @@
+- insert:
+  - id: au05
+    name: '@abworks/dsh-plugin-au05'
+    config: {}
