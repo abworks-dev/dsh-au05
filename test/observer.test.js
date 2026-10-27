@@ -1,7 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import http from 'node:http';
-import { readFile, lstat } from 'node:fs/promises';
+import { execFile } from 'node:child_process';
+import { readFile, lstat, unlink, writeFile } from 'node:fs/promises';
+import { dirname, join } from 'node:path';
+import { promisify } from 'node:util';
 import { createObserver, INPUT_EVENTS } from '../apps/observer/server.mjs';
 import { createCollector, createPrivateToken } from '../apps/observer/main.mjs';
 
@@ -241,7 +244,7 @@ test('collector handles no-device summary, truncated output, missing summary and
   assert.deepEqual(large.finishes, ['collector_protocol_error']); assert.equal(large.stops, 1);
 });
 
-test('secure token provisioning accepts parent environment without disk, otherwise private temporary storage', async () => {
+test('secure token provisioning accepts parent environment without disk, otherwise private temporary storage', async t => {
   const parent = await createPrivateToken({ AU05_OBSERVER_TOKEN: token });
   assert.equal(parent.token, token); assert.equal(parent.file, undefined); await parent.cleanup();
   for (const value of ['public', `${token}\n`, `${token}\r\n`, 123])
@@ -250,11 +253,58 @@ test('secure token provisioning accepts parent environment without disk, otherwi
   try {
     assert.match(generated.token, /^[a-f0-9]{64}$/u);
     assert.match(generated.file, /au05-observer-[a-f0-9]{32}/u);
-    assert.equal(await readFile(generated.file, 'utf8'), generated.token);
+    assert.ok((await readFile(generated.file, 'utf8')) === generated.token, 'private token content must match without disclosing it');
     if (process.platform !== 'win32') assert.equal((await lstat(generated.file)).mode & 0o077, 0);
-    // On Windows creation itself verifies protected directory + file ACLs with a user-only allowlist.
+    else {
+      const probe = join(dirname(generated.file), 'empty-owner-probe');
+      try {
+        // Empty, exclusive scratch file: expose the OS default-owner distinction without a secret.
+        await writeFile(probe, '', { flag: 'wx', mode: 0o600 });
+        const aclCheck = `
+$ErrorActionPreference = 'Stop'
+$ProgressPreference = 'SilentlyContinue'
+try {
+    $identity = [System.Security.Principal.WindowsIdentity]::GetCurrent()
+    $sid = $identity.User
+    function Test-PrivateAcl([string] $path) {
+        if (([System.IO.File]::GetAttributes($path) -band [System.IO.FileAttributes]::ReparsePoint) -ne 0) { return $false }
+        $acl = Get-Acl -LiteralPath $path
+        if ($acl.GetOwner([System.Security.Principal.SecurityIdentifier]).Value -ne $sid.Value -or -not $acl.AreAccessRulesProtected) { return $false }
+        $entries = @($acl.GetAccessRules($true, $true, [System.Security.Principal.SecurityIdentifier]))
+        if ($entries.Count -ne 1) { return $false }
+        $entry = $entries[0]
+        return ($entry.AccessControlType -eq [System.Security.AccessControl.AccessControlType]::Allow -and
+            $entry.IdentityReference.Value -eq $sid.Value -and -not $entry.IsInherited -and
+            ($entry.FileSystemRights -band [System.Security.AccessControl.FileSystemRights]::FullControl) -eq [System.Security.AccessControl.FileSystemRights]::FullControl)
+    }
+    $probeAcl = Get-Acl -LiteralPath $env:AU05_TEST_OWNER_PROBE
+    [Console]::Out.Write((@{
+        directoryPrivate = [bool](Test-PrivateAcl $env:AU05_TEST_PRIVATE_DIRECTORY)
+        filePrivate = [bool](Test-PrivateAcl $env:AU05_TEST_PRIVATE_FILE)
+        processDefaultOwnerMatchesUser = [bool]($identity.Owner.Value -eq $sid.Value)
+        probeOwnerMatchesUser = [bool]($probeAcl.GetOwner([System.Security.Principal.SecurityIdentifier]).Value -eq $sid.Value)
+    } | ConvertTo-Json -Compress))
+} catch { exit 1 }
+`;
+        const { AU05_OBSERVER_TOKEN: omitted, ...safeEnv } = process.env;
+        const { stdout } = await promisify(execFile)('pwsh', ['-NoLogo', '-NoProfile', '-NonInteractive', '-EncodedCommand',
+          Buffer.from(aclCheck, 'utf16le').toString('base64')], {
+          env: { ...safeEnv, AU05_TEST_PRIVATE_DIRECTORY: dirname(generated.file),
+            AU05_TEST_PRIVATE_FILE: generated.file, AU05_TEST_OWNER_PROBE: probe },
+          windowsHide: true, timeout: 10000, maxBuffer: 4096,
+        });
+        const actual = JSON.parse(stdout);
+        assert.equal(actual.directoryPrivate, true, 'directory must have current-user owner and protected user-only FullControl ACL');
+        assert.equal(actual.filePrivate, true, 'token must have current-user owner and protected user-only FullControl ACL');
+        assert.equal(typeof actual.processDefaultOwnerMatchesUser, 'boolean');
+        assert.equal(typeof actual.probeOwnerMatchesUser, 'boolean');
+        t.diagnostic(JSON.stringify({ processDefaultOwnerMatchesUser: actual.processDefaultOwnerMatchesUser,
+          probeOwnerMatchesUser: actual.probeOwnerMatchesUser }));
+      } finally { await unlink(probe).catch(error => { if (error.code !== 'ENOENT') throw error; }); }
+    }
   } finally { await generated.cleanup(); }
   await assert.rejects(lstat(generated.file), { code: 'ENOENT' });
+  await assert.rejects(lstat(dirname(generated.file)), { code: 'ENOENT' });
 });
 
 test('main static contract is single bounded read-only pwsh capture with no raw output, token logging or persistence', async () => {

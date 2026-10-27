@@ -84,14 +84,25 @@ try {
             [System.Security.AccessControl.PropagationFlags]::None, [System.Security.AccessControl.AccessControlType]::Allow)
         $acl.AddAccessRule($rule)
         [System.IO.FileSystemAclExtensions]::Create([System.IO.DirectoryInfo]::new($directory), $acl)
+        # Elevated Windows tokens can default new file ownership to Administrators.
+        # Supply the owner's SID and protected DACL at creation, before any secret exists.
+        $fileAcl = [System.Security.AccessControl.FileSecurity]::new()
+        $fileAcl.SetOwner($sid)
+        $fileAcl.SetAccessRuleProtection($true, $false)
+        $fileAcl.AddAccessRule([System.Security.AccessControl.FileSystemAccessRule]::new($sid,
+            [System.Security.AccessControl.FileSystemRights]::FullControl,
+            [System.Security.AccessControl.AccessControlType]::Allow))
+        $stream = [System.IO.FileSystemAclExtensions]::Create([System.IO.FileInfo]::new($env:AU05_PRIVATE_FILE),
+            [System.IO.FileMode]::CreateNew, [System.Security.AccessControl.FileSystemRights]::Write,
+            [System.IO.FileShare]::None, 4096, [System.IO.FileOptions]::None, $fileAcl)
+        $stream.Dispose()
     }
-    $paths = @($directory)
-    if ($env:AU05_ACL_ACTION -eq 'verify-file') { $paths += $env:AU05_PRIVATE_FILE }
+    $paths = @($directory, $env:AU05_PRIVATE_FILE)
     foreach ($path in $paths) {
         if (([System.IO.File]::GetAttributes($path) -band [System.IO.FileAttributes]::ReparsePoint) -ne 0) { throw 'link' }
         $actual = Get-Acl -LiteralPath $path
         if ($actual.GetOwner([System.Security.Principal.SecurityIdentifier]).Value -ne $sid.Value) { throw 'owner' }
-        if ($path -eq $directory -and -not $actual.AreAccessRulesProtected) { throw 'inheritance' }
+        if (-not $actual.AreAccessRulesProtected) { throw 'inheritance' }
         $allowed = $false
         foreach ($entry in $actual.GetAccessRules($true, $true, [System.Security.Principal.SecurityIdentifier])) {
             if ($entry.AccessControlType -eq [System.Security.AccessControl.AccessControlType]::Allow) {
@@ -132,7 +143,9 @@ export async function createPrivateToken(env = process.env) {
   try {
     if (process.platform === 'win32') await checkWindowsAcl(directory, file, 'create');
     else await mkdir(directory, { mode: 0o700 });
-    await writeFile(file, token, { flag: 'wx', mode: 0o600 });
+    // Windows already exclusively created and verified the empty file with explicit owner/DACL.
+    // Reopen it without replacement so writing cannot reapply an elevated token's default owner.
+    await writeFile(file, token, { flag: process.platform === 'win32' ? 'r+' : 'wx', mode: 0o600 });
     if (process.platform === 'win32') await checkWindowsAcl(directory, file, 'verify-file');
     else {
       await chmod(directory, 0o700); await chmod(file, 0o600);

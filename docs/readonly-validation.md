@@ -174,3 +174,13 @@ npm run hid:capture -- -Seconds 30 -MaxReports 1000
 所有临时采集均已结束并收集退出结果；最后一次实际 GUI 执行 Disconnect，服务关闭、内存令牌丢弃。事后检查：17376 无监听、对应 Windows 只读采集进程无残留。本项目 `deviceWrites=0`、`sessionActions=0`，未开启灯控、映射、发送、审批或取消动作；不对 Studio 自身的设备操作作零写入承诺。
 
 本轮是**有限次数、人工配合的真实 GUI 只读输入验证**，不是完整控制适配或可靠性认证。仍未验证：大样本单格精度与重复/丢包率、长时间 Studio 共存、设备重连及异常恢复、真实 GUI 插件完整卸载流程、任何设备写入和会话控制。下一步如继续开发，优先补足独立重复性试验及可复用的显式连接/采集启动体验，仍不要直接开启审批或灯控。
+
+## Windows CI 私有令牌文件创建修复（2026-10-28）
+
+提交 `d85ee30` 的 [首次 CI](https://github.com/abworks-dev/dsh-au05/actions/runs/40573265121) 并未全绿：Ubuntu Node 22/24 通过，Windows Node 22 在令牌安全存储测试中报 `token_privacy_failed`，另一 Windows job 被取消。这与前述本地 55/55 结果并不矛盾，不能将本地结果冒充远端矩阵通过。
+
+原实现只显式指定目录所有者；随后 Node 普通创建文件使用进程令牌的默认所有者。在提升权限的 Windows 进程中，这可能是 Administrators，而不是当前用户 SID，即使文件已继承用户专用 DACL，严格的 owner 检查仍会拒绝。原失败日志未包含细分权限诊断，不能仅凭通用错误排除其他环境原因。
+
+修复在 Windows 使用 ACL-aware `CreateNew` 创建**空**令牌文件，创建时即指定当前用户所有者、关闭继承、仅允许当前用户 FullControl；目录和文件都通过严格 owner/DACL/非重解析点验证后，才以 `r+` 写入令牌，并再次只读验证。Unix 仍使用独占 `wx` 和私有 mode。没有接受管理员组所有者、放宽 ACL、关闭安全检查或跳过 Windows 测试。
+
+回归在真实临时目录中独立检查目录与文件的所有者、受保护 DACL、用户专用 FullControl 和非重解析点；空文件探针仅诊断默认所有者是否为当前用户，不输出 SID、路径或令牌。测试结束删除探针及私有文件/目录，不连接设备。本地 Windows 完整测试已通过 **55/55、0 skipped**（含 opt-in 离线 DSH runtime fixture），`npm run check` 与 `npm run demo` 通过。本地及对应提交的远端 CI 分别核对，最终矩阵结果以 GitHub Actions 为准。
