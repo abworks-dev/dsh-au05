@@ -1,13 +1,14 @@
 # Original Windows-only AU05 input diagnostic. No protocol writes or feature requests.
 # list: opens matching VID/PID interfaces with zero desired access for local caps.
-# capture: reads one verified vendor collection, then returns aggregate counts only.
+# capture: reads one verified vendor collection; aggregate by default, optional fixed NDJSON events.
 # Run interactively; Ctrl+C requests cancellation. A total timeout is always enforced.
 # No raw reports, stable identifiers, paths, serial numbers, or files are emitted.
 [CmdletBinding()]
 param(
     [ValidateSet('list', 'capture', 'SelfTest')][string]$Mode = 'list',
     [ValidateRange(1, 120)][int]$Seconds = 15,
-    [ValidateRange(1, 10000)][int]$MaxReports = 1000
+    [ValidateRange(1, 10000)][int]$MaxReports = 1000,
+    [switch]$StreamEvents
 )
 
 Set-StrictMode -Version Latest
@@ -230,6 +231,31 @@ namespace Au05ReadOnly {
             } finally { Array.Clear(plain, 0, plain.Length); }
         }
 
+        // Keep the aggregate vocabulary unchanged. Stream output has a separate, closed whitelist.
+        public static string NormalizeInputEvent(string inputEvent) {
+            switch (inputEvent) {
+                case "button_0_down": return "k1.down";
+                case "button_0_up": return "k1.up";
+                case "button_1_down": return "k2.down";
+                case "button_1_up": return "k2.up";
+                case "button_2_down": return "k3.down";
+                case "button_2_up": return "k3.up";
+                case "knob_press_down": return "knob.down";
+                case "knob_press_up": return "knob.up";
+                case "rotate_right_pulse": return "right.pulse";
+                case "rotate_left_pulse": return "left.pulse";
+                default: return null;
+            }
+        }
+
+        static void EmitInput(string inputEvent) {
+            string normalized = NormalizeInputEvent(inputEvent);
+            if (normalized == null) return;
+            // Only compile-time whitelist strings enter JSON; never report bytes or device metadata.
+            Console.WriteLine("{\"type\":\"input\",\"event\":\"" + normalized + "\"}");
+            Console.Out.Flush();
+        }
+
         public static void SelfTest() {
             byte[] knownCipher = { 0x0A, 0x3A, 0xEA, 0x41, 0x40, 0xA9, 0xBA, 0x94 };
             byte[] plain = new byte[8];
@@ -264,6 +290,14 @@ namespace Au05ReadOnly {
             if (Marshal.SizeOf(typeof(Caps)) != 64 || Marshal.SizeOf(typeof(Attributes)) != 12
                 || Marshal.SizeOf(typeof(InterfaceData)) != (IntPtr.Size == 8 ? 32 : 28))
                 throw new Exception("native_layout_failed");
+            string[] aggregateNames = { "button_0_down", "button_0_up", "button_1_down", "button_1_up",
+                "button_2_down", "button_2_up", "knob_press_down", "knob_press_up", "rotate_right_pulse", "rotate_left_pulse" };
+            string[] streamNames = { "k1.down", "k1.up", "k2.down", "k2.up", "k3.down", "k3.up",
+                "knob.down", "knob.up", "right.pulse", "left.pulse" };
+            for (int i = 0; i < aggregateNames.Length; i++)
+                if (NormalizeInputEvent(aggregateNames[i]) != streamNames[i]) throw new Exception("stream_whitelist_failed");
+            if (NormalizeInputEvent(null) != null || NormalizeInputEvent("private_path_marker") != null)
+                throw new Exception("stream_privacy_failed");
             Diagnostic expectedFailure = Diagnose(new NativeFailure("metadata_open_failed", 32));
             if (expectedFailure.Reason != "metadata_open_failed" || expectedFailure.NativeError != 32
                 || Diagnose(new IOException("private_path_marker")).Reason != "io_exception"
@@ -344,8 +378,8 @@ namespace Au05ReadOnly {
             return new EnumerationResult { Devices = result.ToArray(), MetadataDenied = metadataDenied };
         }
 
-        // Returns only counters; no report contents escape this method.
-        public static Summary Capture(Device[] devices, int physicalReceiverCount, int seconds, int maxReports) {
+        // Returns counters, optionally emitting normalized events only; no report contents escape.
+        public static Summary Capture(Device[] devices, int physicalReceiverCount, int seconds, int maxReports, bool streamEvents = false) {
             if (physicalReceiverCount != 1) throw new ArgumentException("exactly_one_receiver_required");
             if (seconds < 1 || seconds > 120 || maxReports < 1 || maxReports > 10000)
                 throw new ArgumentOutOfRangeException("capture_limits");
@@ -377,6 +411,12 @@ namespace Au05ReadOnly {
                         if (Inspect(handle, device.Path) == null) throw new NativeFailure("caps_changed", 0);
                         // On successful construction FileStream owns the handle. No second wrapper owns it.
                         stream = new FileStream(handle, FileAccess.Read, 64, true);
+                        cancel.Token.ThrowIfCancellationRequested();
+                        // Never announce readiness before revalidated caps and a usable read-only stream.
+                        if (streamEvents) {
+                            Console.WriteLine("{\"type\":\"status\",\"event\":\"ready\"}");
+                            Console.Out.Flush();
+                        }
                         while (summary.Reports < maxReports) {
                             cancel.Token.ThrowIfCancellationRequested();
                             // Await cancellation completion before disposing the stream/handle or clearing the buffer.
@@ -393,6 +433,7 @@ namespace Au05ReadOnly {
                                     int count;
                                     summary.Events.TryGetValue(inputEvent, out count);
                                     summary.Events[inputEvent] = count + 1;
+                                    if (streamEvents) EmitInput(inputEvent);
                                 }
                             } else { summary.OtherReportId++; summary.UnknownReports++; }
                             // Counts are reports, not deduplicated physical actions or inferred long presses.
@@ -459,7 +500,7 @@ try {
             physicalReceiverCount = $physicalReceiverCount; metadataDenied = $metadataDenied; writes = 0 } | ConvertTo-Json -Compress
         exit 2
     }
-    $summary = [Au05ReadOnly.Native]::Capture($devices, $physicalReceiverCount, $Seconds, $MaxReports)
+    $summary = [Au05ReadOnly.Native]::Capture($devices, $physicalReceiverCount, $Seconds, $MaxReports, [bool]$StreamEvents)
     [ordered]@{ status = $summary.Status; mode = 'capture'; reports = $summary.Reports;
         physicalReceiverCount = $physicalReceiverCount; metadataDenied = $metadataDenied;
         expectedReportId = $summary.ExpectedReportId; otherReportId = $summary.OtherReportId;

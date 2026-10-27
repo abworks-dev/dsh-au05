@@ -58,10 +58,17 @@ async function browserVerify(seeds, identity) {
     ctx.slots.installScope('session', { current: bindingSource, bindingSource: () => bindingSource,
       renderArea: (_binding, props) => props.children });
     const h = seeds.react.createElement;
+    let visible = true;
+    const viewListeners = new Set();
+    const visibility = { getSnapshot: () => visible,
+      subscribe(listener) { viewListeners.add(listener); return () => viewListeners.delete(listener); } };
     const child = ({ renderSlot }) => renderSlot('conversation.composer.dock', {});
     ctx.slots.register({ name: 'root', id: 'fixture-root', children: {
       'conversation.composer.dock': { kind: 'list', scope: 'session' },
-    } }, ({ SessionProvider, renderSlot }) => h(SessionProvider, { session: 'fixture-A' }, h(child, { renderSlot })));
+    } }, ({ SessionProvider, renderSlot }) => {
+      const show = seeds.react.useSyncExternalStore(visibility.subscribe, visibility.getSnapshot);
+      return h(SessionProvider, { session: 'fixture-A' }, show ? h(child, { renderSlot }) : null);
+    });
     const fork = ctx.plugin(preview);
     await delay();
     assert(ctx.slots.entries('conversation.composer.dock').length === 1, 'real slots.inject/register mounted one preview');
@@ -74,10 +81,40 @@ async function browserVerify(seeds, identity) {
       statuses = new Map([['fixture-B', { running: label !== 'running' }], ['fixture-A', state]]);
       for (const listener of listeners) listener();
       await delay();
-      assert(document.querySelector('[role=status]')?.textContent === `AU05 preview · ${label} · HID off`, `real React/slot status: ${label}`);
+      assert(document.querySelector('[role=status]')?.textContent === `AU05 preview · ${label} · controls off`, `real React/slot status: ${label}`);
     }
     assert(listeners.size > 0, 'selector hook subscribed to the actual root status source');
+    // Synthetic SSE only: prove lifetime boundaries using installed React/slots, never live hardware.
+    let transport, requests = 0, signal;
+    window.fetch = async (url, options) => {
+      assert(url === 'http://127.0.0.1:17376/v1/events' && options.method === 'GET', 'fixture observer is GET-only');
+      requests++; signal = options.signal;
+      const body = new ReadableStream({ start(controller) { transport = controller; } });
+      return { ok: true, headers: { get: () => 'text/event-stream' }, body };
+    };
+    const tokenInput = document.querySelector('[aria-label="AU05 temporary observer token"]');
+    Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(tokenInput, 'a'.repeat(64));
+    tokenInput.dispatchEvent(new Event('input', { bubbles: true }));
+    await delay();
+    document.querySelector('[data-au05-observer] button').click();
+    await delay();
+    assert(requests === 1, 'observer explicitly connects once in offline fixture');
+    const emit = (sequence, count) => transport.enqueue(new TextEncoder().encode(`event: input\ndata: ${JSON.stringify({
+      readOnly: true, writes: 0, hardware: true, finished: false, sequence, event: 'k1.down', counts: { 'k1.down': count },
+    })}\n\n`));
+    emit(1, 1); await delay();
+    assert(document.querySelector('[data-au05-input]')?.textContent.includes('event reports 1'), 'real React displays synthetic observer input');
+    visible = false; for (const listener of viewListeners) listener(); await delay();
+    assert(document.querySelector('[data-au05-observer]') === null, 'real slot view unmounts');
+    assert(!signal.aborted, 'view unmount does not abort explicitly connected plugin observer');
+    emit(2, 2); await delay();
+    visible = true; for (const listener of viewListeners) listener(); await delay();
+    assert(document.querySelector('[data-au05-input]')?.textContent.includes('event reports 2'), 'slot remount retains latest observation without reconnect');
+    assert(document.querySelector('[data-au05-lifecycle]')?.textContent.includes('views 2'), 'real React recorded second view mount');
+    assert(requests === 1, 'slot remount makes no extra request');
     await fork.dispose();
+    assert(signal.aborted, 'plugin fiber unload aborts observer connection');
+    transport.close();
     await delay();
     assert(ctx.slots.entries('conversation.composer.dock').length === 0, 'plugin fiber unload removes slot registration');
     assert(document.querySelector('[role=status]') === null, 'plugin fiber unload removes rendered preview');

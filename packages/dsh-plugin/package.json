@@ -1,8 +1,8 @@
 {
   "name": "@abworks/dsh-plugin-au05",
-  "version": "0.1.0",
+  "version": "0.2.1",
   "type": "module",
-  "description": "Read-only AU05 integration preview for DeepSeek Harness; mock-first design",
+  "description": "Read-only AU05 session status and explicit-connect HID input observer for DeepSeek Harness",
   "license": "MIT",
   "exports": { ".": "./index.js", "./client": "./client.js", "./icon": "./icon.svg" },
   "files": ["index.js", "client.js", "cordis.patch.yml", "icon.svg", "README.md", "LICENSE"],

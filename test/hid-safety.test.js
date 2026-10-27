@@ -15,7 +15,7 @@ test('HID diagnostic is ASCII and exposes no arbitrary payload/path/output argum
   assert.match(parameters, /ValidateSet\('list', 'capture', 'SelfTest'\)/u);
   assert.match(parameters, /ValidateRange\(1, 120\)/u);
   assert.match(parameters, /ValidateRange\(1, 10000\)/u);
-  assert.deepEqual([...parameters.matchAll(/\$(\w+)/gu)].map(match => match[1]), ['Mode', 'Seconds', 'MaxReports']);
+  assert.deepEqual([...parameters.matchAll(/\$(\w+)/gu)].map(match => match[1]), ['Mode', 'Seconds', 'MaxReports', 'StreamEvents']);
   assert.match(script, /PSVersionTable\.PSVersion\.Major -lt 7/u);
   assert.match(script, /Environment\]::Version\.Major -lt 6/u);
 });
@@ -54,7 +54,7 @@ test('only metadata access-denied is skipped; capture requires one physical pare
   const capture = script.indexOf('$summary = [Au05ReadOnly.Native]::Capture(');
   assert.ok(guard > 0 && guard < capture);
   assert.match(script.slice(guard, capture), /exit 2/u);
-  assert.match(script, /Capture\(\$devices, \$physicalReceiverCount, \$Seconds, \$MaxReports\)/u);
+  assert.match(script, /Capture\(\$devices, \$physicalReceiverCount, \$Seconds, \$MaxReports, \[bool\]\$StreamEvents\)/u);
   const pattern = script.match(/\$_\.InstanceId -match '([^']+)'/u)?.[1];
   assert.equal(pattern, String.raw`^USB\\VID_FFF1&PID_00DD\\`);
   const parent = new RegExp(pattern, 'i');
@@ -110,6 +110,36 @@ test('failure diagnostics expose fixed codes and numeric errors, not exception t
   assert.match(source, /int metadataError = Marshal\.GetLastWin32Error\(\);/u);
   assert.match(source, /new NativeFailure\("metadata_open_failed", metadataError\)/u);
   assert.match(source, /diagnostic_privacy_failed/u);
+});
+
+test('streaming is opt-in, maps only the fixed decoded event whitelist, and announces verified readiness only', () => {
+  assert.match(script, /\[switch\]\$StreamEvents/u);
+  assert.match(source, /int maxReports, bool streamEvents = false/u);
+  const mapping = source.slice(source.indexOf('public static string NormalizeInputEvent('), source.indexOf('static void EmitInput('));
+  const entries = [...mapping.matchAll(/case "([^"]+)": return "([^"]+)";/gu)].map(match => [match[1], match[2]]);
+  assert.deepEqual(entries, [
+    ['button_0_down', 'k1.down'], ['button_0_up', 'k1.up'],
+    ['button_1_down', 'k2.down'], ['button_1_up', 'k2.up'],
+    ['button_2_down', 'k3.down'], ['button_2_up', 'k3.up'],
+    ['knob_press_down', 'knob.down'], ['knob_press_up', 'knob.up'],
+    ['rotate_right_pulse', 'right.pulse'], ['rotate_left_pulse', 'left.pulse'],
+  ]);
+  assert.match(mapping, /default: return null/u);
+  const output = source.slice(source.indexOf('static void EmitInput('), source.indexOf('public static void SelfTest('));
+  assert.doesNotMatch(output, /Path|report\[|buffer|Alias|Serial/u);
+  assert.match(output, /if \(normalized == null\) return/u);
+  assert.match(output, /Console\.Out\.Flush\(\)/u);
+  const capture = source.slice(source.indexOf('public static Summary Capture('));
+  assert.match(capture, /if \(streamEvents\) EmitInput\(inputEvent\)/u);
+  const revalidate = capture.indexOf('if (Inspect(handle, device.Path) == null) throw');
+  const stream = capture.indexOf('stream = new FileStream(handle, FileAccess.Read, 64, true)');
+  const ready = capture.indexOf('if (streamEvents) {');
+  const read = capture.indexOf('stream.ReadAsync(');
+  assert.ok(revalidate >= 0 && revalidate < stream && stream < ready && ready < read);
+  assert.match(capture.slice(stream, ready), /cancel\.Token\.ThrowIfCancellationRequested\(\)/u);
+  assert.equal([...source.matchAll(/Console\.WriteLine\(/gu)].length, 2, 'only fixed input and ready JSON records');
+  assert.match(source, /stream_whitelist_failed/u);
+  assert.match(source, /stream_privacy_failed/u);
 });
 
 test('Windows offline SelfTest compiles C#, verifies TEA KAT/layout and touches no devices', {

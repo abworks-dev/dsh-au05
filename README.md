@@ -2,16 +2,16 @@
 
 **DSH 官方格式插件 ⇄ Windows 本机 HID 桥 ⇄ Ulanzi AU05 / VibeKey** 的开源方案与 mock-first 骨架。
 
-> 当前是 **只读验证与原型阶段，不是可直接控制 AU05 的驱动发布版**。已实现官方格式只读插件、模拟桥、输入解码和 Windows 只读 HID 诊断；本机 DSH 真实运行库的离线渲染/卸载检查已通过。三键与旋钮六类输入报告已在 Windows 真机观察到；物理动作精确计数、真实 GUI 安装与端到端集成仍待验收，灯控及实际审批均未启用。不要据此购买设备或替换生产工作流。
+> 当前是 **只读验证与原型阶段，不是可直接控制 AU05 的驱动发布版**。已实现官方格式只读插件、模拟桥、输入解码、Windows 只读 HID 诊断及认证观察桥。本机 DSH 真实 GUI 已安装并启用插件 `0.2.1`，三键、旋钮按压及双向旋转六类输入已逐项显示；离开并返回会话时观察连接保留。首次右转未出报告及额外人工试动均保留记录，尚不证明长期零丢失/零重复。灯控、发送及实际审批仍未启用。详见 [只读实测记录](docs/readonly-validation.md)。不要据此购买设备或替换生产工作流。
 
 ## 为什么分三层
 
 ```text
 DSH Web / Electron
   官方 Cordis 客户端插件：选中会话、状态、审批 UI、输入框
-        ⇅ loopback HTTP + Bearer + fetch SSE（拟接入）
-本机桥：认证、独占租约、事件规范化、有限状态灯映射
-        ⇅ Windows vendor HID（独立只读诊断已验；生产桥接待实现）
+        ⇅ loopback HTTP + Bearer + fetch SSE（只读观察已验）
+本机只读观察桥：认证、白名单事件、限时采集
+        ⇅ Windows vendor HID（只读已验；控制及灯映射未接设备）
 AU05 USB 接收器（发射器本体通过 2.4 GHz 连接）
 ```
 
@@ -29,6 +29,7 @@ dsh-au05/
 │   ├── dsh-plugin/          官方 bundle：package.json / index.js / client.js / cordis.patch.yml
 │   └── core/               原创会话租约、快照、意图票据策略模型
 ├── apps/bridge/            Node 22+ 本机模拟 HTTP/SSE 桥；不含真实 HID 后端
+├── apps/observer/          认证只读 SSE 观察桥；连接限时 Windows 输入采集
 ├── scripts/                mock 演示、只读 HID 诊断、DSH 离线 runtime 验证与结构检查
 ├── test/                   核心策略、桥安全、输入协议、只读安全及插件测试
 ├── docs/
@@ -63,13 +64,13 @@ npm run demo
 npm run bridge:mock
 ```
 
-默认仅绑定 `127.0.0.1:17375`。每次启动生成令牌写入被 Git 忽略的 `.local/bridge-token`，不回显令牌。默认允许 Origin 为示例 `http://127.0.0.1:3080`，**并不自动发现你当前 DSH 的端口**。用环境变量 `AU05_ORIGINS` 设置精确的本机 Origin（多个逗号分隔），`AU05_PORT` 改端口。浏览器连接插件尚未实现，现有插件只显示状态。Windows 的文件 `mode: 0600` 不等于已设置用户 ACL；当前令牌文件只适合受控开发环境。
+默认仅绑定 `127.0.0.1:17375`。每次启动生成令牌写入被 Git 忽略的 `.local/bridge-token`，不回显令牌。默认允许 Origin 为示例 `http://127.0.0.1:3080`，**并不自动发现你当前 DSH 的端口**。用环境变量 `AU05_ORIGINS` 设置精确的本机 Origin（多个逗号分隔），`AU05_PORT` 改端口。模拟控制桥不接实体设备。真实输入观察使用单独的只读桥（默认 `127.0.0.1:17376`）和插件中的显式 Connect，不把模拟意图或灯映射当成实体控制。Windows 的文件 `mode: 0600` 不等于已设置用户 ACL；当前令牌文件只适合受控开发环境。
 
 ## 官方格式插件
 
-[插件包](packages/dsh-plugin/README.md) 的只读装饰显示当前 composer 所绑定会话的 `running` / `pendingInteraction`，没有 HID/网络/审批副作用。官方源码基线：`deepseek-ai/deepseek-harness@22ddee3792402c3e70ec5f86a63c3e3e895a2f60`。创建仓库时没有修改 DSH 安装目录、用户 profile 或安装插件。
+[插件包](packages/dsh-plugin/README.md) 的只读装饰显示当前 composer 所绑定会话的 `running` / `pendingInteraction`。挂载不会自动连接；用户显式 Connect 后仅通过认证 GET 接收本机桥的白名单输入，没有设备写入或审批副作用。官方源码基线：`deepseek-ai/deepseek-harness@22ddee3792402c3e70ec5f86a63c3e3e895a2f60`。仓库最初创建时未改动 DSH；后续经用户授权，已通过官方插件管理器在实际 GUI 安装并验证本地插件。
 
-本机 DSH `0.2.1-rc.3` 的真实 loader、Cordis、React、renderer 已在隔离离线页面通过 **13 项断言**，详见 [runtime 验证](docs/plugin-runtime-validation.md)。会话数据仍为合成 fixture，真实 GUI/profile 安装、CSP/CORS 与跨进程桥接 **待验收**，不能把离线检查冒充 GUI 兼容认证。官方格式与后续接入方式见 [DSH 说明](docs/dsh-plugin.md)。
+本机 DSH `0.2.1-rc.3` 的真实 loader、Cordis、React、renderer 隔离 fixture 当前通过 **22 项断言**；会话与 fixture 流仍为合成数据，不能当成实体硬件证明。另已完成真实 GUI 的只读桥连接、视图重建保留连接及六类实体输入逐项对照，详见 [最新只读实测](docs/readonly-validation.md#gui-生命周期修复与逐项单次输入2026-10-28插件-021)。完整卸载流程、长期可靠性和任何实际控制仍未验收。历史离线基线见 [runtime 验证](docs/plugin-runtime-validation.md)，官方格式见 [DSH 说明](docs/dsh-plugin.md)。
 
 ## Windows 只读输入诊断
 
