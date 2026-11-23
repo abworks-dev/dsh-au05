@@ -1,0 +1,220 @@
+// Official external-client lazy module format; no SDK internals are bundled.
+// Observer only: explicit local connection; no session actions or device writes.
+window.__ModuleLoader__.load({
+  id: '@abworks/dsh-plugin-au05',
+  factory(require) {
+    const React = require('react');
+    const h = React.createElement;
+    const eventLabels = {
+      'k1.down': '按键1按下', 'k1.up': '按键1松开', 'k2.down': '按键2按下', 'k2.up': '按键2松开',
+      'k3.down': '按键3按下', 'k3.up': '按键3松开', 'knob.down': '旋钮按下', 'knob.up': '旋钮松开',
+      'right.pulse': '旋钮右转', 'left.pulse': '旋钮左转',
+    };
+    const events = new Set(Object.keys(eventLabels));
+    // Mirrors the server's FINISH_STATUSES; never render an unvalidated remote reason.
+    const finishLabels = {
+      timeout: '到期结束', report_limit: '采集结束（报告已达上限）', cancelled: '采集结束（已取消）',
+      disconnected: '设备断开', io_error: '采集结束（设备读取异常）', no_device: '未找到设备',
+      ambiguous_device: '采集结束（设备不唯一）', physical_receiver_unverified: '采集结束（接收器未验证）',
+      hid_operation_failed: '采集结束（设备读取失败）', collector_error: '采集结束（采集器异常）',
+      collector_protocol_error: '采集结束（采集协议异常）', collector_timeout: '采集结束（采集器超时）',
+      collector_exit: '采集结束（采集器退出）', stopped: '采集结束（已停止）',
+    };
+    const finishStatuses = new Set(Object.keys(finishLabels));
+    const captureStatuses = new Set(['waiting', 'ready', ...finishStatuses]);
+    const statusLabels = { ...finishLabels, disconnected: '未连接', connecting: '连接中',
+      waiting: '等待设备', ready: '采集中', capture_finished: '采集结束', stream_closed: '连接中断',
+      unavailable: '连接中断（连接失败或数据无效）', invalid_token: '令牌无效，请重新粘贴',
+      no_credential: '请先粘贴令牌连接' };
+    const captureLabel = status => status === 'disconnected' ? finishLabels.disconnected : statusLabels[status];
+    const endpoint = 'http://127.0.0.1:17376/v1/events';
+    // The explicit connection belongs to one plugin instance, not a disposable composer view.
+    // The last validated credential stays only in this closure, never in a view snapshot.
+    function createObserver() {
+      let snapshot = { status: 'disconnected', sample: null, canReconnect: false, mounts: 0, detachments: 0 };
+      let active = null, disposed = false, credential = null;
+      const listeners = new Set();
+      const publish = update => {
+        if (disposed) return;
+        snapshot = { ...snapshot, ...update };
+        for (const listener of listeners) listener();
+      };
+      const abort = () => { const previous = active; active = null; previous?.abort(); };
+      const observer = {
+        getSnapshot: () => snapshot,
+        subscribe(listener) { listeners.add(listener); return () => listeners.delete(listener); },
+        attach() { publish({ mounts: snapshot.mounts + 1 }); },
+        detach() { publish({ detachments: snapshot.detachments + 1 }); },
+        disconnect() {
+          if (!disposed) { credential = null; abort(); publish({ status: 'disconnected', sample: null, canReconnect: false }); }
+        },
+        dispose() { if (!disposed) { credential = null; abort(); disposed = true; listeners.clear(); } },
+        reconnect() {
+          if (disposed) return;
+          if (credential) return observer.connect(credential);
+          if (!active) publish({ status: 'no_credential' });
+        },
+        async connect(secret) {
+          if (disposed) return;
+          if (typeof secret !== 'string' || !/^[a-f0-9]{64}$/.test(secret)) {
+            if (!active) publish({ status: 'invalid_token' });
+            return;
+          }
+          abort();
+          const controller = new AbortController(); active = controller;
+          const current = () => !disposed && active === controller && !controller.signal.aborted;
+          publish({ status: 'connecting' });
+          let reader, terminalReason = null;
+          try {
+            const response = await fetch(endpoint, { method: 'GET', headers: { Authorization: `Bearer ${secret}` },
+              cache: 'no-store', credentials: 'omit', referrerPolicy: 'no-referrer', signal: controller.signal });
+            if (!current()) return;
+            if (!response.ok || !response.headers.get('content-type')?.startsWith('text/event-stream') || !response.body)
+              throw new Error('observer_unavailable');
+            reader = response.body.getReader();
+            const decoder = new TextDecoder(); let buffer = '';
+            while (current()) {
+              const { value, done } = await reader.read();
+              if (!current()) return;
+              if (done) break;
+              buffer += decoder.decode(value, { stream: true }).replaceAll('\r\n', '\n');
+              if (buffer.length > 65536) throw new Error('observer_frame_limit');
+              let boundary;
+              while ((boundary = buffer.indexOf('\n\n')) !== -1) {
+                const frame = buffer.slice(0, boundary); buffer = buffer.slice(boundary + 2);
+                const kind = frame.match(/^event: *(snapshot|input|status)$/m)?.[1];
+                const json = frame.match(/^data: *(.*)$/m)?.[1];
+                if (!kind || !json) continue;
+                const data = JSON.parse(json);
+                if (!data || data.readOnly !== true || data.writes !== 0 || typeof data.hardware !== 'boolean'
+                  || typeof data.finished !== 'boolean' || !Number.isSafeInteger(data.sequence) || data.sequence < 0
+                  || !data.counts || typeof data.counts !== 'object' || Array.isArray(data.counts)
+                  || Object.entries(data.counts).some(([name, count]) => !events.has(name) || !Number.isSafeInteger(count) || count < 0 || count > 10000)
+                  || Object.values(data.counts).reduce((sum, count) => sum + count, 0) > 10000
+                  || (kind === 'input' && !events.has(data.event))
+                  || (Object.hasOwn(data, 'status') && (!captureStatuses.has(data.status)
+                    || finishStatuses.has(data.status) !== data.finished
+                    || data.hardware !== (data.status === 'ready')))) throw new Error('observer_invalid_frame');
+                if (!current()) return;
+                // Only authenticated, fully validated read-only evidence authorizes manual reuse.
+                if (secret !== null) { credential = secret; secret = null; }
+                const captureStatus = data.status ?? (data.finished
+                  ? (kind === 'status' && finishStatuses.has(data.event) ? data.event : 'capture_finished')
+                  : data.hardware ? 'ready' : 'waiting');
+                if (!terminalReason && data.finished) terminalReason = captureStatus;
+                publish({ sample: { sequence: data.sequence, lastEvent: events.has(data.event) ? data.event
+                  : events.has(data.lastEvent) ? data.lastEvent : null, counts: data.counts, status: terminalReason ?? captureStatus },
+                  status: terminalReason === 'disconnected' ? 'device_disconnected' : terminalReason ?? captureStatus,
+                  canReconnect: true });
+              }
+            }
+            if (current() && !terminalReason) publish({ status: 'stream_closed' });
+          } catch {
+            if (current() && !terminalReason) publish({ status: 'unavailable' });
+          } finally {
+            secret = null;
+            if (reader) { try { await reader.cancel(); } catch {} reader.releaseLock(); }
+            if (active === controller) active = null;
+          }
+        },
+      };
+      return observer;
+    }
+    // Local names and shell alias tokens only: no global CSS or UI internals.
+    const panelCss = `
+[data-au05-plugin] { position: fixed; top: calc(var(--dsh-frame-overlay-top, 20px) + 40px + env(safe-area-inset-top, 0px)); right: calc(16px + env(safe-area-inset-right, 0px)); z-index: 1; display: flex; flex-direction: column; align-items: flex-end; gap: 8px; max-width: calc(100vw - 32px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)); font: inherit; font-size: 12px; color: var(--dsw-alias-label-primary, CanvasText); }
+[data-au05-plugin] * { box-sizing: border-box; }
+[data-au05-plugin] button, [data-au05-plugin] input { font: inherit; color: inherit; }
+[data-au05-plugin] button { cursor: pointer; }
+[data-au05-plugin] button:focus-visible, [data-au05-plugin] input:focus-visible, [data-au05-plugin] [role=dialog]:focus-visible { outline: 2px solid var(--dsw-alias-brand-primary, #5168bd); outline-offset: 3px; }
+[data-au05-plugin] .au05-pill { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; padding: 8px 12px; border-radius: 999px; border: 1px solid var(--dsw-alias-border-l2, #d9dce3); background: var(--dsw-alias-bg-base, Canvas); box-shadow: 0 3px 14px #19233214; }
+[data-au05-plugin] button:hover { background: color-mix(in srgb, var(--dsw-alias-bg-base, Canvas) 92%, currentColor); }
+[data-au05-plugin] button:active { transform: translateY(1px); }
+[data-au05-plugin] .au05-dot { width: 7px; height: 7px; flex: none; border-radius: 50%; background: var(--dsw-alias-label-tertiary, #858b96); }
+[data-au05-plugin] .au05-dot[data-active=true] { background: #2b8b68; }
+[data-au05-plugin] .au05-readonly { color: var(--dsw-alias-label-secondary, currentColor); font-size: 11px; white-space: nowrap; }
+[data-au05-plugin] [data-au05-connection] { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+[data-au05-plugin] .au05-panel { width: 360px; max-width: 100%; max-height: calc(100dvh - var(--dsh-frame-overlay-top, 20px) - 112px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)); overflow-y: auto; overscroll-behavior: contain; padding: 16px; border-radius: 12px; border: 1px solid var(--dsw-alias-border-l2, #d9dce3); background: var(--dsw-alias-bg-base, Canvas); box-shadow: 0 10px 32px #19233220; line-height: 1.6; }
+[data-au05-plugin] .au05-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+[data-au05-plugin] h2 { font-size: 14px; font-weight: 600; margin: 0; }
+[data-au05-plugin] .au05-actions { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 14px; }
+[data-au05-plugin] .au05-action { border: 1px solid var(--dsw-alias-border-l2, #d9dce3); border-radius: 7px; padding: 5px 9px; background: var(--dsw-alias-bg-base, Canvas); }
+[data-au05-plugin] .au05-token { display: block; width: 100%; padding: 8px 10px; margin-top: 5px; border-radius: 7px; border: 1px solid var(--dsw-alias-border-l2, #d9dce3); background: var(--dsw-alias-bg-base, Canvas); }
+[data-au05-plugin] .au05-counts { margin: 12px 0; font-variant-numeric: tabular-nums; }
+[data-au05-plugin] .au05-count-row { display: grid; grid-template-columns: 1fr 2fr; gap: 12px; padding: 6px 0; border-bottom: 1px solid var(--dsw-alias-border-l2, #d9dce3); }
+[data-au05-plugin] dt, [data-au05-plugin] dd { margin: 0; }
+[data-au05-plugin] dd { display: flex; justify-content: space-between; gap: 10px; }
+[data-au05-plugin] .au05-note { margin: 8px 0 0; color: var(--dsw-alias-label-secondary, currentColor); overflow-wrap: anywhere; }
+[data-au05-plugin] .au05-diagnostics { font-size: 11px; }
+`;
+    const countPairs = [
+      ['按键1', 'k1.down', '按下', 'k1.up', '松开'],
+      ['按键2', 'k2.down', '按下', 'k2.up', '松开'],
+      ['按键3', 'k3.down', '按下', 'k3.up', '松开'],
+      ['旋钮按压', 'knob.down', '按下', 'knob.up', '松开'],
+      ['旋钮转动', 'right.pulse', '右转', 'left.pulse', '左转'],
+    ];
+    function observerView(observer) {
+      return function Au05Observer() {
+        const [token, setToken] = React.useState('');
+        const [snapshot, setSnapshot] = React.useState(observer.getSnapshot);
+        const [open, setOpen] = React.useState(false);
+        const pillRef = React.useRef(null), panelRef = React.useRef(null);
+        React.useEffect(() => {
+          const unsubscribe = observer.subscribe(() => setSnapshot(observer.getSnapshot()));
+          observer.attach(); setSnapshot(observer.getSnapshot());
+          return () => { unsubscribe(); observer.detach(); };
+        }, []);
+        React.useEffect(() => { if (open) panelRef.current?.focus(); }, [open]);
+        // Folding is view-only. The transport and verified credential belong to the plugin.
+        const close = () => { setToken(''); setOpen(false); pillRef.current?.focus(); };
+        const connect = () => { const secret = token; setToken(''); return observer.connect(secret); };
+        const { status, sample, canReconnect, mounts, detachments } = snapshot;
+        const label = status === 'device_disconnected' ? finishLabels.disconnected : statusLabels[status];
+        return h('div', { 'data-au05-plugin': '', 'data-au05-observer': '', onKeyDown: event => {
+          if (open && event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); close(); }
+        } },
+          h('style', { 'data-au05-styles': '' }, panelCss),
+          h('button', { 'data-au05-pill': '', className: 'au05-pill', type: 'button', ref: pillRef,
+            'aria-label': 'AU05 只读观察器', 'aria-description': `只读观察：${label}`, 'aria-expanded': open, 'aria-haspopup': 'dialog',
+            'aria-controls': 'au05-observer-panel', onClick: () => open ? close() : setOpen(true) },
+            h('span', { className: 'au05-dot', 'data-active': status === 'ready', 'aria-hidden': true }),
+            h('strong', null, 'AU05'), h('span', { className: 'au05-readonly' }, '只读'),
+            h('span', { 'data-au05-connection': '', role: 'status' }, `只读观察：${label}`)),
+          open && h('section', { id: 'au05-observer-panel', 'data-au05-panel': '', className: 'au05-panel',
+            role: 'dialog', 'aria-label': 'AU05 只读观察面板', 'aria-modal': false, tabIndex: -1, ref: panelRef },
+            h('header', { className: 'au05-heading' }, h('h2', null, 'AU05 只读观察'),
+              h('button', { 'data-au05-close': '', className: 'au05-action', type: 'button', 'aria-label': '收起 AU05 观察面板', onClick: close }, '收起')),
+            h('label', null, '临时观察令牌',
+              h('input', { 'data-au05-token': '', className: 'au05-token', type: 'password', value: token, autoComplete: 'off', placeholder: '粘贴临时观察令牌',
+                'aria-label': 'AU05 临时观察令牌', onChange: event => setToken(event.target.value) })),
+            h('div', { className: 'au05-actions' },
+              h('button', { 'data-au05-connect': '', 'aria-label': 'AU05 连接观察', className: 'au05-action', type: 'button', onClick: connect }, '连接'),
+              h('button', { 'data-au05-reconnect': '', 'aria-label': 'AU05 手动重连', className: 'au05-action', type: 'button', onClick: () => observer.reconnect(),
+                title: canReconnect ? '使用本次已验证的内存令牌，仅重连观察' : '请先粘贴令牌并成功连接' }, '手动重连'),
+              h('button', { 'data-au05-disconnect': '', 'aria-label': 'AU05 断开观察', className: 'au05-action', type: 'button', onClick: () => { setToken(''); observer.disconnect(); },
+                title: '仅断开浏览器观察，不停止设备采集；同时清除内存令牌' }, '断开观察')),
+            h('p', { 'data-au05-input': '', className: 'au05-note' }, sample
+              ? `采集状态：${captureLabel(sample.status)} · 事件报告 ${Object.values(sample.counts).reduce((sum, count) => sum + count, 0)} · 序号 ${sample.sequence} · 最近：${eventLabels[sample.lastEvent] ?? '无'}`
+              : '尚无输入报告'),
+            h('dl', { className: 'au05-counts', 'aria-label': '只读输入计数' }, ...countPairs.map(([name, first, firstLabel, second, secondLabel]) =>
+              h('div', { key: name, className: 'au05-count-row', 'data-au05-count-pair': name }, h('dt', null, name),
+                h('dd', null, h('span', null, `${firstLabel} ${sample?.counts[first] ?? 0}`), h('span', null, `${secondLabel} ${sample?.counts[second] ?? 0}`))))),
+            h('p', { 'data-au05-safety': '', className: 'au05-note' }, '本机启动器负责启动/停止/重新采集，限时120秒，不自动重连。断开观察不停止设备采集。只读：不控制灯光、不发送/取消会话、不执行审批。'),
+            h('p', { 'data-au05-global': '', className: 'au05-note' }, '全局设备观察，不绑定或控制任何会话。收起面板不停止观察。'),
+            h('p', { 'data-au05-lifecycle': '', className: 'au05-note au05-diagnostics' }, `视图挂载 ${mounts} · 卸载 ${detachments}`)));
+      };
+    }
+    return {
+      inject: ['slots'],
+      apply(ctx) {
+        const observer = createObserver();
+        const Observer = observerView(observer);
+        ctx.effect(() => () => observer.dispose());
+        ctx.slots.inject('shell.overlay', () => ctx.slots.register({
+          name: 'shell.overlay', id: 'au05-observer', order: 90,
+        }, Observer));
+      },
+    };
+  },
+});
