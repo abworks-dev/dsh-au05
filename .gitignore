@@ -9,3 +9,10 @@ coverage/
 *.tsbuildinfo
 .DS_Store
 Thumbs.db
+playwright-report/
+test-results/
+# Local Impeccable engine and AU05 design QA scratch (not reviewable source).
+.dsh/skills/impeccable/scripts/bin/
+Temp/ui-system/
+.impeccable/screenshots/
+.impeccable/cache/

@@ -17,3 +17,25 @@ jobs:
       - run: npm test
       - run: npm run check
       - run: npm run demo
+  visual:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.22.1'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install chromium
+      - run: npm run build:plugin
+      - run: npm run test:visual
+      - run: npm run test:visual:negative
+      - run: npm run test:visual:layout -- --out test-results/layout
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: au05-visual-windows
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14

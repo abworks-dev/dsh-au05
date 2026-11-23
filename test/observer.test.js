@@ -5,8 +5,10 @@ import { execFile } from 'node:child_process';
 import { readFile, lstat, unlink, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { promisify } from 'node:util';
-import { createObserver, INPUT_EVENTS } from '../apps/observer/server.mjs';
-import { createCollector, createPrivateToken } from '../apps/observer/main.mjs';
+import { PassThrough } from 'node:stream';
+import { once } from 'node:events';
+import { createObserver, FINISH_STATUSES, INPUT_EVENTS } from '../apps/observer/server.mjs';
+import { attachManagedStop, createCollector, createPrivateToken } from '../apps/observer/main.mjs';
 
 const token = 'a'.repeat(64);
 const origin = 'http://127.0.0.1:60890';
@@ -81,7 +83,7 @@ test('health starts unverified, sanitized, safe and read-only; authenticated loc
   const result = await request(server);
   assert.equal(result.status, 200);
   assert.deepEqual(result.data, { mode: 'read-only', hardware: false, readOnly: true, writes: 0,
-    finished: false, sequence: 0, counts: Object.fromEntries(INPUT_EVENTS.map(event => [event, 0])) });
+    status: 'waiting', finished: false, sequence: 0, counts: Object.fromEntries(INPUT_EVENTS.map(event => [event, 0])) });
   assert.equal(result.headers['cache-control'], 'no-store');
   assert.equal(result.headers['access-control-allow-origin'], origin);
   assert.equal((await request(server, { headers: { authorization: '' } })).status, 401);
@@ -91,7 +93,7 @@ test('health starts unverified, sanitized, safe and read-only; authenticated loc
   for (const value of ['null', '*', 'http://localhost:60890', 'http://127.0.0.1:60890/', 'http://127.0.0.1:60891'])
     assert.equal((await request(server, { headers: { origin: value } })).status, 403);
   for (const path of ['/v1/health?token=private_marker', '/v1/events?x=1', '/v1/%68ealth', '/v1/events/',
-    '/v1/lease', '/v1/control', '/v1/mock/input', '//v1/health']) assert.equal((await request(server, { path })).status, 404);
+    '/v1/lease', '/v1/control', '/v1/mock/input', '/v1/start', '/v1/stop', '/v1/restart', '//v1/health']) assert.equal((await request(server, { path })).status, 404);
   for (const method of ['POST', 'PUT', 'PATCH', 'DELETE', 'HEAD'])
     assert.equal((await request(server, { method })).status, 405);
 });
@@ -305,6 +307,49 @@ try {
   } finally { await generated.cleanup(); }
   await assert.rejects(lstat(generated.file), { code: 'ENOENT' });
   await assert.rejects(lstat(dirname(generated.file)), { code: 'ENOENT' });
+});
+
+test('finished reason persists in health and new snapshots without reopening capture', async t => {
+  for (const reason of FINISH_STATUSES) {
+    const server = await fixture(t);
+    server.ingest({ type: 'status', event: 'ready' });
+    assert.equal((await request(server)).data.status, 'ready');
+    server.finish(reason);
+    const health = (await request(server)).data;
+    assert.equal(health.status, reason); assert.equal(health.finished, true);
+    assert.equal(health.hardware, false); assert.equal(health.writes, 0);
+    assert.equal(server.ingest({ type: 'status', event: 'ready' }), false);
+    const late = await stream(server);
+    assert.equal((await late.next()).data.status, reason);
+    late.res.destroy();
+  }
+});
+
+test('managed launcher pipe closes only its observer, no network command or restart capability', async t => {
+  for (const stopLine of ['stop\n', 'stop\r\n']) {
+    const server = await fixture(t), input = new PassThrough();
+    let shutdowns = 0; server.on('observer:shutdown', () => shutdowns++);
+    const closed = once(server, 'close');
+    attachManagedStop(server, input);
+    input.write(stopLine.slice(0, 2)); assert.equal(server.listening, true);
+    input.write(stopLine.slice(2)); await closed;
+    assert.equal(shutdowns, 1); assert.equal(input.listenerCount('data'), 0);
+    assert.equal(input.listenerCount('end'), 0); assert.equal(input.listenerCount('error'), 0);
+    input.destroy();
+  }
+});
+
+test('managed launcher EOF, input errors and malformed commands stop fail-closed without echo', async t => {
+  for (const command of [null, 'start\n', 'stop\nstart\n', 'stop --anything\n', 'x'.repeat(10000), 'error']) {
+    const server = await fixture(t), input = new PassThrough();
+    const closed = once(server, 'close');
+    attachManagedStop(server, input);
+    if (command === null) input.end();
+    else if (command === 'error') input.emit('error', new Error('private_marker'));
+    else input.write(command);
+    await closed;
+    assert.equal(input.listenerCount('data'), 0); input.destroy();
+  }
 });
 
 test('main static contract is single bounded read-only pwsh capture with no raw output, token logging or persistence', async () => {

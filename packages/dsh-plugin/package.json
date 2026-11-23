@@ -1,17 +1,28 @@
 {
   "name": "@abworks/dsh-plugin-au05",
-  "version": "0.2.1",
+  "version": "0.6.0-dev.4",
   "type": "module",
-  "description": "Read-only AU05 session status and explicit-connect HID input observer for DeepSeek Harness",
+  "description": "AU05 中文设备控制：按住语音、单次审批、取消运行、旋钮切换会话与四区灯光反馈",
   "license": "MIT",
-  "exports": { ".": "./index.js", "./client": "./client.js", "./icon": "./icon.svg" },
-  "files": ["index.js", "client.js", "cordis.patch.yml", "icon.svg", "README.md", "LICENSE"],
+  "exports": { ".": "./index.js", "./client": "./client.js", "./icon": "./icon.svg", "./windows-voice": "./host/windows-voice.js", "./shortcut-voice": "./host/shortcut-voice.js", "./protocol": "./host/rpc.js" },
+  "files": ["index.js", "client.js", "core", "host", "native", "cordis.patch.yml", "icon.svg", "README.md", "LICENSE"],
+  "peerDependencies": { "@deepseek-ai/dsh-typert-protocol": "^0.2.1-rc.3" },
   "dsh": {
     "bundle": { "patch": "./cordis.patch.yml" },
     "client": {
       "platform": "web",
       "immediately": true,
-      "inject": ["@deepseek-ai/dsh-client-ui-conversation", "@deepseek-ai/dsh-client-ui-session"]
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-renderer",
+        "@deepseek-ai/dsh-client-connection",
+        "@deepseek-ai/dsh-api-session-controller",
+        "@deepseek-ai/dsh-client-ui-session",
+        "@deepseek-ai/dsh-client-ui-session-status",
+        "@deepseek-ai/dsh-client-ui-conversation",
+        "@deepseek-ai/dsh-client-ui-workspace",
+        "@deepseek-ai/dsh-api-workspace-controller",
+        "@deepseek-ai/dsh-api-gateway"
+      ]
     }
   }
 }

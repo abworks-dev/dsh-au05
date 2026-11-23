@@ -156,6 +156,32 @@ export async function createPrivateToken(env = process.env) {
   } catch { await cleanup(); throw new Error('token_privacy_failed'); }
 }
 
+// Only the local launcher owns this pipe. There is no HTTP lifecycle/command endpoint.
+// EOF, malformed input or one exact stop line closes the owned observer; nothing can start/retry it.
+export function attachManagedStop(server, input = process.stdin) {
+  let buffer = '', stopped = false;
+  const detach = () => {
+    input.removeListener('data', data); input.removeListener('end', stop); input.removeListener('error', stop);
+    input.pause();
+  };
+  const stop = () => {
+    if (stopped) return;
+    stopped = true; detach(); server.close(); server.closeAllConnections();
+  };
+  const data = chunk => {
+    const bytes = Buffer.from(chunk);
+    if (buffer.length + bytes.length > 6) return stop();
+    buffer += bytes.toString('utf8');
+    if (buffer === 'stop\n' || buffer === 'stop\r\n') return stop();
+    if (!'stop\r\n'.startsWith(buffer) && !'stop\n'.startsWith(buffer)) stop();
+  };
+  input.on('data', data); input.once('end', stop); input.once('error', stop);
+  server.once('close', detach);
+  if (input.readableEnded || input.destroyed) stop();
+  else input.resume();
+  return detach;
+}
+
 export async function startObserver(env = process.env) {
   if (process.platform !== 'win32') throw new Error('windows_required');
   const portText = env.AU05_OBSERVER_PORT ?? '17376';
@@ -172,6 +198,9 @@ export async function startObserver(env = process.env) {
   try {
     server = createObserver({ token: secret.token, origins });
     server.once('observer:shutdown', () => { void cleanup(); });
+    server.once('observer:finished', reason => {
+      process.stdout.write(JSON.stringify({ status: 'observer_finished', reason }) + '\n');
+    });
     await new Promise((resolveListen, reject) => {
       server.once('error', reject);
       server.listen(Number(portText), '127.0.0.1', resolveListen);
@@ -207,7 +236,11 @@ export async function startObserver(env = process.env) {
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  try { await startObserver(); }
+  try {
+    if (process.argv.length > 3 || process.argv[2] !== undefined && process.argv[2] !== '--managed') throw new Error('observer_start_failed');
+    const server = await startObserver();
+    if (process.argv[2] === '--managed') attachManagedStop(server);
+  }
   catch (error) {
     const code = ['windows_required', 'invalid_port', 'invalid_token', 'token_privacy_failed'].includes(error?.message)
       ? error.message : 'observer_start_failed';

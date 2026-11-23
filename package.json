@@ -1,19 +1,40 @@
 {
   "name": "dsh-au05",
-  "version": "0.1.0",
+  "version": "0.6.0-dev.4",
   "private": true,
   "type": "module",
-  "description": "Design-first Windows AU05 bridge and official-format DSH client plugin scaffold",
+  "description": "Windows AU05 HID backend, Chinese device UI and official-format DSH session/voice control plugin",
   "license": "MIT",
-  "engines": { "node": ">=22" },
-  "workspaces": ["packages/dsh-plugin"],
+  "engines": {
+    "node": ">=22"
+  },
+  "workspaces": [
+    "packages/dsh-plugin",
+    "packages/dsh-studio-hook"
+  ],
   "scripts": {
-    "test": "node --test test/*.test.js",
+    "build:plugin": "node scripts/build-plugin.mjs",
+    "test:visual": "playwright test",
+    "test:visual:negative": "node scripts/au05-visual-negative.mjs",
+    "test:visual:preflight": "node scripts/au05-visual-preflight.mjs",
+    "test:visual:layout": "node scripts/au05-visual-check.mjs --offline --verify-layout",
+    "test:hooks": "node --test test/generic-hooks*.test.js",
+    "pack:hooks": "npm pack ./packages/dsh-hooks --pack-destination dist",
+    "pack:plugins": "node scripts/package-plugins.mjs",
+    "test": "node scripts/build-plugin.mjs --check && node --test test/*.test.js",
     "check": "node scripts/check.mjs",
     "bridge:mock": "node apps/bridge/main.mjs",
     "demo": "node scripts/demo.mjs",
+    "observer:gui": "pwsh -NoLogo -NoProfile -STA -File scripts/observer-gui.ps1",
+    "observer:gui:selftest": "pwsh -NoLogo -NoProfile -File scripts/observer-gui.ps1 -SelfTest",
     "hid:list": "pwsh -NoLogo -NoProfile -File scripts/windows-hid-readonly.ps1 -Mode list",
     "hid:capture": "pwsh -NoLogo -NoProfile -File scripts/windows-hid-readonly.ps1 -Mode capture",
     "hid:selftest": "pwsh -NoLogo -NoProfile -File scripts/windows-hid-readonly.ps1 -Mode SelfTest"
+  },
+  "devDependencies": {
+    "@fontsource/noto-sans-sc": "5.3.1",
+    "@playwright/test": "1.58.2",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
   }
 }

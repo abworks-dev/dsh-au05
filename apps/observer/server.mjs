@@ -29,10 +29,10 @@ export function createObserver({ token, origins = ['http://127.0.0.1:60890', 'ds
   const expected = Buffer.from(`Bearer ${token}`);
   const counts = Object.fromEntries(INPUT_EVENTS.map(event => [event, 0]));
   const clients = new Map();
-  let hardware = false, finished = false, sequence = 0, total = 0, lastEvent;
+  let hardware = false, finished = false, sequence = 0, total = 0, lastEvent, status = 'waiting';
   let ready = false, closing = false;
   const summary = () => ({ mode: 'read-only', hardware, readOnly: true, writes: 0,
-    finished, sequence, counts: { ...counts }, ...(lastEvent ? { lastEvent } : {}) });
+    status, finished, sequence, counts: { ...counts }, ...(lastEvent ? { lastEvent } : {}) });
   const advance = () => { sequence = Math.min(Number.MAX_SAFE_INTEGER, sequence + 1); };
   const removeClient = client => { clearInterval(clients.get(client)); clients.delete(client); };
   const frame = (kind, value) => `event: ${kind}\ndata: ${JSON.stringify(value)}\n\n`;
@@ -98,7 +98,7 @@ export function createObserver({ token, origins = ['http://127.0.0.1:60890', 'ds
     if (closing || finished || !record || Object.getPrototypeOf(record) !== Object.prototype
       || Object.keys(record).length !== 2 || !Object.hasOwn(record, 'type') || !Object.hasOwn(record, 'event')) return false;
     if (record.type === 'status' && record.event === 'ready' && !ready) {
-      ready = true; hardware = true; advance();
+      ready = true; hardware = true; status = 'ready'; advance();
       publish('status', { type: 'status', event: 'ready', ...summary() });
       return true;
     }
@@ -107,10 +107,11 @@ export function createObserver({ token, origins = ['http://127.0.0.1:60890', 'ds
     publish('input', { type: 'input', event: record.event, ...summary() });
     return true;
   };
-  server.finish = status => {
+  server.finish = reason => {
     if (finished) return false;
-    finished = true; hardware = false; advance();
-    publish('status', { type: 'status', event: finishSet.has(status) ? status : 'collector_error', ...summary() });
+    finished = true; hardware = false; status = finishSet.has(reason) ? reason : 'collector_error'; advance();
+    publish('status', { type: 'status', event: status, ...summary() });
+    server.emit('observer:finished', status);
     return true;
   };
   const close = server.close.bind(server);
