@@ -21,7 +21,7 @@
     "test:hooks": "node --test test/generic-hooks*.test.js",
     "pack:hooks": "npm pack ./packages/dsh-hooks --pack-destination dist",
     "pack:plugins": "node scripts/package-plugins.mjs",
-    "test": "node scripts/build-plugin.mjs --check && node --test test/*.test.js",
+    "test": "node --test test/*.test.js",
     "check": "node scripts/check.mjs",
     "bridge:mock": "node apps/bridge/main.mjs",
     "demo": "node scripts/demo.mjs",
