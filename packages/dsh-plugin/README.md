@@ -1,88 +1,11 @@
-# DSH AU05 设备插件 · 0.6.0-dev.4
+# DSH AU05 read-only observer
 
-dev.4 只修 DSH 0.2.3 兼容：`uiSession.sessionStatus` 已成为独立 Cordis 服务，客户端入口必须在运行时 `inject` 里单独声明它，否则 `apply` 抛 `cannot get property "uiSession.sessionStatus" without inject`，插件页显示“本页面的插件未能完成同步”，设备面板与悬浮层不出现。0.6.0-dev.3 及更早版本在 0.2.3+ 上都会如此失败；0.2.1 时代该状态是 `uiSession` 的普通成员，因此旧版不需要声明。
+Official-format external client package. Reads only the slot-bound session status. An explicit **Connect observer** button can display normalized input reports from a separate Windows read-only collector at `http://127.0.0.1:17376`. There is no session send/cancel/approval/command operation, microphone capture, keyboard injection, device configuration or lighting code.
 
-已打包 dev.3 基线只修内置语音 K1 初始化：认证后先在线／心跳再查询本体连接；首次真实 K1 录音可触发一次有界恢复，严格原始配置快照确认前不写灯，已松手不补迟到 On。**2026-11-02 已有人类实体确认：按住 K1 呼吸、松开熄灭；同轮 On/Off GET 一致。** 该基线还通过一次完整 DSH 重启／重连后相同闭环；不代表长期稳定。下方叭哥说功能为打包后新增源码。
+Use the official DSH Plugins page → add third-party plugin → this package's absolute directory. Back up plugin configuration first; a deployment without live reconciliation may require a later DSH restart. Never edit app.asar or profile files manually. This package does not start the collector or establish any network connection on mount.
 
-实验性 K1 仍默认关闭、不持久化，每次重连需明确重新打开。界面保留“未验证实体灯”的旧标签，不借版本更新更改默认开关或其他功能；单次通过不代表所有模式均已验收。语音流程、K2/K3、旋钮、其他任务灯及 Host 模式互斥保持不变。当前操作以 [0.6 快速使用](<../../docs/quick-start-dev.md>) 为准。
+The temporary observer token goes only into a password input, is cleared after connection, and is never stored in localStorage, cookies, URLs or logs. Fetch uses an Authorization header, `credentials: 'omit'` and no referrer. Explicit Disconnect or plugin disable/unload aborts the stream. The authorized connection and last observation live only in that plugin instance's memory: a composer view unmount/remount unsubscribes/resubscribes without reconnecting or dropping the observation. No connection is restored after a page reload or plugin reload. The UI shows view mount/detachment counters for lifecycle diagnosis. The observer has only authenticated GET health/events routes and exact-origin CORS; it cannot accept session/device commands.
 
-通过 DSH 官方插件体系接入 AU05 接收器，提供显式连接、当前会话按键控制、按住说话和状态灯反馈。右上角胶囊为“AU05”，展开后是“AU05 设备”面板。**这是有会话操作和可选设备写入的产品插件，不再是旧版只读观察器。**
+The browser entry registers through `window.__ModuleLoader__.load`, the Host entry exports a no-op `apply()`, and `dsh.bundle.patch` declares the Cordis insertion patch. No replacement DSH or Vite server is needed. npm publication has not been performed.
 
-完整操作、边界和故障处理见 [0.5 产品使用指南](../../docs/product-guide.md)。本文与指南描述当前代码行为，不代表本轮已完成真实 GUI、麦克风或硬件验收。
-
-## 打包后新增源码：叭哥说单击切换与采集灯
-
-- Windows 本机 Direct 模式：应用预设选“网易叭哥说”，应用自身配置 RightAlt 单击切换，启用语音；连接后显式开启实验性 K1 灯，才启动只读观察。
-- K1 新按下一次只发送一个完整 RightAlt 轻点，松开与长按不追加。只有目标实际采集、身份和状态均有效且当前 DSH 焦点有效时才请求呼吸；已发送快捷键不算录音证据，不自动发送草稿。
-- 仅观察唯一目标进程及经校验的同映像子进程的 CoreAudio 采集会话状态，不读取音频、窗口内容、转写或历史。目标 PID／创建时间／完整路径固定，重启不自动重绑；未知、错误或过期状态不得保留呼吸。
-- 浮窗抢焦点时不向其他窗口补按：请在叭哥说内手动停止，或切回 DSH 并聚焦输入框。断开／关闭观察只停止本插件观察，不停止叭哥说采集。关闭全局灯反馈释放任务灯接管并恢复原灯效，不停止外部应用采集。
-- 内置长按语音、Windows／Typeless／自定义、K2/K3、旋钮与 AU05 原生灯协议不改。2026-11-03 用户已确认 Windows Direct／叭哥说 1.0.41.0 一轮“单击 K1 启动并呼吸、再按 K1 停止并熄灭”，同连接配置回读一致；不扩展为长期稳定或 Studio 已验收。旧 dev.3 ZIP 不包含本次新增。
-
-## 可选跨应用 K1 听写（叭哥说专用，新增源码）
-
-本机 Windows 桌面 Direct 模式下，选择“网易叭哥说”、启用语音并连接设备后，可开启默认关闭的“跨应用 K1 听写”。在 QQ 等应用的非密码可编辑输入框新按 K1，发送一次固定 RightAlt 点按；需要将叭哥说设置为 RightAlt 单击切换。开启灯光反馈时，实际采集状态可在 DSH 失焦后继续驱动 K1 呼吸；未知、失鲜或目标异常撤销录音提示，不按快捷键次数推测状态。
-
-这是前述 DSH 焦点限制的专用例外；未开启时维持原行为，K2/K3/旋钮和其他语音模式始终不一起放宽。关闭灯光反馈不关闭听写能力。DSH 客户端与 Host 必须保持运行，后台节流可能延迟或丢弃超龄按键。前台／焦点改变、没有可编辑焦点或修饰键按住时可能拒绝发送；请在叭哥说内手动停止。关闭开关、断开或退出不保证停止采集，不自动发送消息，不自动重试或重绑重启后的应用。
-
-跨应用源码尚未完成 QQ、浮窗和实体灯验收；之前仅 DSH 内的单轮实体通过不覆盖此项。完整步骤见[产品指南](<../../docs/product-guide.md#可选跨应用-k1-听写2026-11-04-新增源码尚未实机验收>)。
-
-## 设备设置入口
-
-AU05 连接、断开、灯光反馈、独立语音开关及旋钮设置在「AU05」胶囊展开的「AU05 设备」面板中提供，不向钩子设置页面添加设备控制卡。拖动胶囊可移动；靠近左右窗口边缘松开后，离开胶囊会半隐藏，悬停、键盘聚焦或打开面板时完整显示。位置保存在当前页面来源的本地存储；无法保存时仍可在本次页面内移动。聚焦胶囊后可用 Alt+方向键移动、Alt+Home 恢复右上角。已有明确保存的自动连接偏好仍按原行为执行。
-
-灯光使用唯一当前主会话的官方运行/待处理状态仲裁；按键操作仍要求前台焦点、有效新事件和当前上下文，K2 不会因钩子通知而自动审批。命令钩子「全局执行开关」与设备连接/灯光分别控制；不需要旧 Studio 桥，也不改变原有实体灯验证限制。
-
-## 使用前
-
-- Host 需要 Windows 与 PowerShell 7；接收器插在运行 DSH Host 的 Windows 电脑上，不是远程浏览器所在电脑。
-- 通过 DSH 官方插件管理器添加本包目录，并启用插件包和对应组件；遵守当前 DSH 的兼容性提示。不要修改安装包或手工编辑 profile。
-- 同一接收器不要同时被 AU05 Studio、旧只读采集器或另一 DSH 客户端占用。先正常停止它们，确认释放设备后再连接。
-- 默认只在点击“连接设备”后启动 Host 设备连接。可选“启动时自动连接设备”默认关闭：开启只保存偏好，下次插件加载尝试连接一次；失败或主动断开不重试，展开面板不连接。此选项会允许下一次加载接管可写设备，不是只读或 Windows 登录自启动。无需旧观察桥或令牌。
-
-## 按键
-
-操作只作用于 **DSH 前台窗口中唯一的当前主会话**，不会猜测列表第一项，也不广播给其他会话。
-
-| 操作 | 作用 |
-|---|---|
-| 按键1 | DSH 按住录音、松开转写；Windows 新按一次请求系统听写；第三方新按一次发送预设／自定义快捷键，Typeless 再按结束。均需先启用，**不自动发送**。 |
-| 按键2 | 有选择题时确认旋转聚焦的选项，最后一道单选题同时提交；多选题每按一次切换一项，完成后使用界面提交。未聚焦选项或自定义输入时沿用界面当前选择／默认推荐；空白自定义输入不提交。无待处理交互时，有灰色建议则仅补齐，否则发送草稿。审批仍仅“允许一次”。 |
-| 按键3 | 拒绝当前可回答审批；否则停止当前正在运行的任务。 |
-| 旋钮左／右 | 「区域切换」下滚动高亮区域；在选择题选项中移动焦点，不自动提交。旧的切换会话、上下滚动、整屏滚动及禁用模式仍保留。 |
-| 旋钮按下 | 「区域切换」下依次切换可用的会话列表、对话、输入框、选择题选项，显示蓝色边框和区域名。选择题自定义输入和选项是两个独立区域，进入时聚焦对应控件；内部暂未滚到的控件也可切入。旧模式仍直接聚焦输入。 |
-
-首次使用默认「区域切换」；已有旋钮偏好不覆盖，可在 AU05 面板的旋钮设置中切换。区域模式只滚动高亮容器，桌面、浏览器与 Studio 均不依赖鼠标位置：每格增加 80 CSS 像素目标，由一个逐帧动画推进；同向旋转合并目标，反向立即丢弃旧余程并从可见位置反向。及时但不均匀的回调单次最多积分 32 ms，避免按停顿时长追赶；实际投递间隔或回调迟到超过 100 ms 就丢弃旧动画，不重放。到端点不串滚其他区域，不注入系统滚轮或移动鼠标。手动滚动、切区、元素替换、失焦或上下文变化即取消旧动画，不改投新区域；系统减少动态效果设置下即时滚动。选择题选项仍仅移动焦点，由 K2 单独确认。旧「上下滚动」模式仍使用系统滚轮，保留鼠标位置与修饰键限制。
-
-建议补齐使用同步、可取消的 `dsh:suggest-prompt:accept` 浏览器事件（`detail.sessionId` 指定当前会话），不模拟 Tab，不改变普通键盘回车。建议插件确认当前可见建议后取消事件并自行填充草稿；未处理则保持原发送行为。当前 `@studyzy/dsh-suggest-prompt` 1.2.3 原版没有此事件，需运行 `node scripts/patch-suggest-accept.mjs <建议插件的 lib/client.js 路径>` 应用本地兼容补丁（先备份）；更新建议插件后需重新检查／应用，重载两个插件或刷新页面后生效。没有补丁时 K2 仍按原逻辑发送，不应视为支持补齐。
-
-切换会话、窗口失焦或审批变化会作废旧按键上下文与录音。旧按住事件不会变成新会话的操作，需要松开后重新按下。非审批交互仍需在 DSH 界面处理。
-
-## 语音与灯光
-
-面板可选 **DSH 内置／Windows 原生／应用预设／自定义快捷键**。应用预设含 Typeless 与网易叭哥说，自定义是独立模式。首次选择 DSH，四种模式均默认关闭；各自保存启用偏好。**恢复勾选不等于权限、就绪或录音**：语音偏好恢复、模式切换、展开面板和刷新麦克风列表不会打开麦克风或发送快捷键；仍需新的 K1 操作。自动连接是另一个独立、默认关闭的偏好。
-
-- **保存范围**：模式、各模式启用偏好、DSH 麦克风选择、应用预设、独立自定义快捷键、旋钮行为和启动自动连接偏好，使用当前浏览器／桌面存储环境、当前页面来源的专用本地存储。同环境同来源下刷新／重启可恢复；桌面与普通浏览器、不同配置／来源（含端口）不保证共享，清除站点数据会重置。不是 Host 全局设置或同步；存储失败时提示未保存，本次使用不等于重启后仍保留。不存音频、转写、会话、连接状态或权限凭据。
-- **DSH 内置**：面板提供麦克风下拉框与刷新列表；刷新只枚举设备，不为补齐名称而请求采集。首次尚无选定输入时优先可识别的 AU05；没有 AU05 时可使用系统默认输入，识别到实际物理输入后固定保存。自动或手动选定后，不因刷新或发现 AU05 而覆盖；保存的输入缺失时提示选择，**不自动换用其他麦克风**。用户明确选择“系统默认麦克风（跟随系统）”则跟随系统；设备标识可能随权限／来源变化，需要重新选择。用户主动勾选启用时可能为权限检查短暂打开音频流并立即关闭，不录制、不转写；首次名称尚不可见时可能先检查系统默认输入，随后优先识别 AU05。恢复偏好不做该检查，仍需新的 K1 按下才开始录音，必要时再请求权限；权限与保存的偏好独立。使用已配置语音服务，云端服务可能接收音频；转写草稿冲突时保留文字供手动恢复。
-- **Windows 原生**：无需 DSH 提供商，仅本机 DSH 桌面支持。**麦克风由 Windows 声音／语音设置管理，插件不提供应用内选择，DSH 下拉框不控制 Win+H。** 先聚焦唯一输入框，再新按 K1 请求固定 Win+H，**需在系统面板结束听写**。Windows 可能立即侦听，需系统权限、在线语音与网络，音频可能发送 Microsoft；断开插件不保证系统听写停止。界面“已请求”不证明系统面板或麦克风实际开启，系统转写也不具备插件的草稿冲突保护。
-
-- **应用预设／自定义快捷键**：仅本机 Windows DSH 桌面、当前输入已聚焦时可请求。Typeless 与网易叭哥说预设均使用右 Alt（RightAlt）；应用改过快捷键时选择独立自定义，不要求修改应用默认设置。润色、翻译等继续由应用自身处理，无虚构功能 API。独立自定义支持受限组合键并需显式保存，禁止脚本、裸字母和危险系统／编辑组合。新按 K1 发一次完整点按，松开不操作；不把叭哥说结束方式等同于 Typeless。插件不安装、启动或检测应用，不伪装已开始录音；结束与麦克风由各应用管理，失焦或断开时请在应用内手动停止。详见[第三方说明](<../../docs/product-guide.md#应用预设与独立自定义快捷键>)。
-
-上一轮麦克风功能本地完整回归 203/203 通过（0 跳过），已在现有 DSH 中文面板确认保存提示、麦克风下拉框和 AU05 识别；未开启语音采集或系统听写。应用完整重启、实际音频来源与端到端转写仍待分别实测，详见[验证范围](../../docs/product-guide.md#dsh-内置)。
-
-灯光反馈初始开启，属于设备写入；可在连接前关闭。Direct 模式连接且启用反馈时持续接管，待机或任务结束请求四灯关闭；有效录音提示与可选 K2/K3 实体按下短亮仍可覆盖对应通道。只有关闭反馈、断开或正常退出才尽力恢复首次接管前的全局模式和四通道完整记录；原快照不随任务轮次、空闲或亮度变化覆盖。全零目标不是恢复原配置，逐灯关闭也须配置回读确认。恢复写入但未回读、回读不一致或失败均不得显示为恢复成功；配置一致不代表实体灯已目视验收。
-
-取消灯光反馈表示释放任务灯接管并恢复原配置，而不是请求全部灯光熄灭；未接管时不改灯。**不等于重新以只读句柄打开设备**。`written` 仅表示操作系统接受写入，不证明物理灯态或写后读回成功。原状态无法读取时不接管灯态；断开时尽力恢复已保存的原状态，但设备拔出、写入失败或强制终止时不能保证恢复。Studio 模式继续由 Studio 管理灯光，不套用 Direct 恢复事务。
-
-### GUI 调节亮度（Direct 模式）
-
-展开 AU05 面板的“高级设置”，滑块预选后点击“应用亮度”。GUI 对齐已核实的官方 AU05 范围 **0–20，步长 1**；未设置时预选仍为 2，不自动应用。已保存的 0–20 原样保留，旧值 21–255 自动迁移为 20；存储失败时使用内存值 20，并提示未保存。不能从滑块范围推断硬件绝对上限、光学线性或 0 一定熄灭。Host／原生协议仍接受 0–255 字节供兼容与诊断，设备截断或其他字段不一致仍报告不一致，不放宽校验。
-
-Direct 任务灯使用工作模式 `2`。显式应用亮度时，按官方策略仅更新 K1/K2/K3 的呼吸亮度（mask `0x20`）和旋钮的常亮亮度（mask `0x40`）；任务类型另用 type-only（`0x04`）逐通道提交，不同时覆盖另一亮度、工作时间、呼吸等级或全亮模式亮度。不指定 brightness 时仍沿用既有任务预设，不新增亮度覆盖请求。诊断 expected／observed 保留 mode 与四组五字段记录（type/workTime/breatheLevel/breatheBright/alwaysOnBright），从本轮已观察的设备配置核对目标字段及保留字段；回读丢失或释放后重新接管时先读取 live 基线，失败不继续写灯。首次原快照只用于恢复，不因调亮度重写；不改变采集判定、按键功能或 K1 开关。实现证据与验收边界见[亮度对齐记录](<../../docs/brightness-recovery.md#2026-11-04-按官方亮度逻辑对齐>)。
-
-首次未调整时不指定亮度；调整后在当前页面来源本地记住请求值，仅在开启灯光反馈且实际接管任务灯时应用；待机连接或待机调节不因此覆盖设备原灯效。可点击“清除亮度设置并断开”删除偏好并请求断开，原生进程仍尽力恢复接管前快照；这不是实体恢复成功的承诺。需手动重新连接，重连不再携带 brightness。未亮起的灯不会因调整自动点亮，可在叭哥说实际采集中观察 K1。Studio 模式灯光由 Studio 管理，不显示此控件。配置回读一致不替代实体亮度验收。
-
-## 断开与历史文档
-
-点击“断开设备”释放当前客户端连接并取消录音；插件卸载也执行清理。仅收起面板不会断开。刷新后，只有已保存启动自动连接偏好时才尝试连接一次；否则仍需手动连接。失败或主动断开没有重连循环。
-
-以下文件保留为**历史资料，不能作为 0.5 操作步骤或当前验收证明**：[旧只读 GUI 指南](../../docs/readonly-gui.md)、[旧只读验证](../../docs/readonly-validation.md)、[历史插件架构](../../docs/dsh-plugin.md)、[历史 runtime 验证](../../docs/plugin-runtime-validation.md)。旧启动器、观察桥、令牌配对和限时只读采集流程不适用于本产品连接。
+The [earlier runtime validation](../../docs/plugin-runtime-validation.md) used installed DSH code with synthetic session data, not a live GUI installation. See the [root README](../../README.md), [plugin architecture](../../docs/dsh-plugin.md) and [read-only hardware evidence](../../docs/readonly-validation.md) for the distinction between offline checks and actual results.
