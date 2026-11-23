@@ -9,7 +9,7 @@ test('official-format product client declares only public service faces and scop
   vm.runInNewContext(source, { window: { __ModuleLoader__: { load(value) { registration = value; } } } });
   assert.equal(registration.id, '@abworks/dsh-plugin-au05');
   const plugin = registration.factory(name => { assert.equal(name, 'react'); return { createElement() {} }; });
-  for (const service of ['slots', 'connection', 'sessions', 'uiSession', 'uiWorkspace', 'workspaces', 'remote'])
+  for (const service of ['slots', 'connection', 'sessions', 'uiSession', 'uiSession.sessionStatus', 'uiWorkspace', 'workspaces', 'remote'])
     assert.ok(Array.from(plugin.inject).includes(service), `missing declared service ${service}`);
   assert.match(source, /name: 'shell\.overlay', id: 'au05-device'/);
   assert.equal(typeof plugin.mountActionBridges, 'function');
@@ -23,13 +23,16 @@ test('official-format product client declares only public service faces and scop
   assert.match(source, /var\(--dsw-alias-bg-layer-1,Canvas\)/);
   assert.match(source, /var\(--dsw-alias-brand-primary,Highlight\)/);
   assert.doesNotMatch(source, /--dsw-alias-interactive-bg-hover/);
-  // Allow only the session-scoped non-keyboard suggestion request, not arbitrary
-  // event injection. All other event dispatch remains forbidden.
+  // Allow only the session-scoped non-keyboard suggestion request and the
+  // element-scoped wheel that scrolls a region, not arbitrary event injection.
+  // All other event dispatch remains forbidden.
   const suggestionRequest = /const request = new CustomEvent\('dsh:suggest-prompt:accept', \{\s*cancelable: true, detail: \{ sessionId: target\.sessionId \},\s*\}\);\s*window\.dispatchEvent\(request\);\s*if \(request\.defaultPrevented\) return;/;
+  const regionWheel = /el\.dispatchEvent\(new Wheel\('wheel', \{ bubbles: true, cancelable: true, deltaY: Math\.sign\(direction\) \* 80, deltaMode: 0 \}\)\);/;
   assert.match(source, suggestionRequest);
-  assert.equal((source.match(/dispatchEvent\(/g) ?? []).length, 1);
-  assert.doesNotMatch(source.replace(suggestionRequest, ''), /sessionStorage|document\.cookie|dispatchEvent\(|KeyboardEvent\(|window\.scroll|fetch\(/,
-    'only the session-scoped suggestion event is allowed; no global key injection or credential storage');
+  assert.match(source, regionWheel);
+  assert.equal((source.match(/dispatchEvent\(/g) ?? []).length, 2);
+  assert.doesNotMatch(source.replace(suggestionRequest, '').replace(regionWheel, ''), /sessionStorage|document\.cookie|dispatchEvent\(|KeyboardEvent\(|window\.scroll|fetch\(/,
+    'only the session-scoped suggestion event and the scoped region wheel are allowed; no global key injection or credential storage');
   assert.match(source, /const voicePreferencesKey = 'abworks\.au05\.voice-preferences\.v1'/);
   assert.match(source, /pending\.answer\(answer\)/);
   assert.match(source, /approve\(target, 'allowed-once'\)/);

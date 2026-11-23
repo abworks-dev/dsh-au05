@@ -25,7 +25,7 @@ jobs:
         with:
           node-version: '24.22.1'
           cache: npm
-      - run: npm ci
+      - run: npm install --no-audit --no-fund
       - run: npx playwright install chromium
       - run: npm run build:plugin
       - run: npm run test:visual

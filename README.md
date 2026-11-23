@@ -6,7 +6,7 @@
 
 ## 通用钩子：DSH Hooks（独立插件）
 
-不需要 AU05 / Studio、只想管理本地自动化？使用新包 `@abworks/dsh-hooks`。提供事件分组设置页、命令编辑、全局/单项开关和有限运行记录，详见 [DSH Hooks 文档](<packages/dsh-hooks/README.md>)。它借鉴 Codex Hooks，不是完整兼容实现；旧 `@abworks/dsh-studio-hook` 保留为硬件桥，不破坏已有配置。
+不需要 AU05 / Studio、只想管理本地自动化？使用新包 `@abworks/dsh-hooks`。提供事件分组设置页、命令编辑、全局/单项开关和有限运行记录，详见 [DSH Hooks 文档](https://github.com/abworks-dev/dsh-hooks)。它借鉴 Codex Hooks，不是完整兼容实现；旧 `@abworks/dsh-studio-hook` 保留为硬件桥，不破坏已有配置。
 
 ## 当前源码新增：叭哥说单击切换与只读采集灯联动（单轮实体闭环通过）
 
