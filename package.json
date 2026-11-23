@@ -21,7 +21,7 @@
     "test:hooks": "node --test test/generic-hooks*.test.js",
     "pack:hooks": "npm pack ./packages/dsh-hooks --pack-destination dist",
     "pack:plugins": "node scripts/package-plugins.mjs",
-    "test": "node --test test/*.test.js",
+    "test": "node scripts/run-tests.mjs",
     "check": "node scripts/check.mjs",
     "bridge:mock": "node apps/bridge/main.mjs",
     "demo": "node scripts/demo.mjs",
@@ -29,7 +29,8 @@
     "observer:gui:selftest": "pwsh -NoLogo -NoProfile -File scripts/observer-gui.ps1 -SelfTest",
     "hid:list": "pwsh -NoLogo -NoProfile -File scripts/windows-hid-readonly.ps1 -Mode list",
     "hid:capture": "pwsh -NoLogo -NoProfile -File scripts/windows-hid-readonly.ps1 -Mode capture",
-    "hid:selftest": "pwsh -NoLogo -NoProfile -File scripts/windows-hid-readonly.ps1 -Mode SelfTest"
+    "hid:selftest": "pwsh -NoLogo -NoProfile -File scripts/windows-hid-readonly.ps1 -Mode SelfTest",
+    "test:native": "node scripts/run-tests.mjs --hardware-only"
   },
   "devDependencies": {
     "@fontsource/noto-sans-sc": "5.3.1",

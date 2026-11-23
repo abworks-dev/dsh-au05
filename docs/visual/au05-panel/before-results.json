@@ -1,0 +1,525 @@
+{
+  "source": "E:\\Repository\\Github\\dsh-au05\\Temp\\au05-unslop\\client.before.js",
+  "sha256": "9bb6ba25175ed7aadeede88bd1d1229b8db2aabd2326cb3d5df7dd7322c0c170",
+  "fixture": "real productView and panelCss; synthetic controller; no DSH host",
+  "fixtureSha256": "a1bb1cf871b1a2cf1118306b0a3073a28caca0630d5e4405370679c3a1f305e6",
+  "browser": "156.0.8078.80",
+  "results": [
+    {
+      "name": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "light",
+      "state": "default",
+      "measure": {
+        "width": 380,
+        "height": 568.515625,
+        "left": 1044,
+        "right": 1424,
+        "top": 100,
+        "bottom": 668.515625,
+        "clientWidth": 363,
+        "scrollWidth": 363,
+        "clientHeight": 567,
+        "scrollHeight": 567,
+        "connectionButtonsSameRow": true,
+        "fields": []
+      },
+      "expandedMeasure": null,
+      "actions": [
+        "refreshMicrophones",
+        "refreshMicrophones"
+      ],
+      "keyboard": "passed"
+    },
+    {
+      "name": "narrow",
+      "viewport": {
+        "width": 320,
+        "height": 720
+      },
+      "theme": "light",
+      "state": "default",
+      "measure": {
+        "width": 304,
+        "height": 569.203125,
+        "left": 8,
+        "right": 312,
+        "top": 100,
+        "bottom": 669.203125,
+        "clientWidth": 287,
+        "scrollWidth": 287,
+        "clientHeight": 567,
+        "scrollHeight": 567,
+        "connectionButtonsSameRow": false,
+        "fields": []
+      },
+      "expandedMeasure": null,
+      "actions": [
+        "refreshMicrophones",
+        "refreshMicrophones"
+      ],
+      "keyboard": "passed"
+    },
+    {
+      "name": "dark",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "dark",
+      "state": "default",
+      "measure": {
+        "width": 380,
+        "height": 568.515625,
+        "left": 1044,
+        "right": 1424,
+        "top": 100,
+        "bottom": 668.515625,
+        "clientWidth": 363,
+        "scrollWidth": 363,
+        "clientHeight": 567,
+        "scrollHeight": 567,
+        "connectionButtonsSameRow": true,
+        "fields": []
+      },
+      "expandedMeasure": null,
+      "actions": [
+        "refreshMicrophones",
+        "refreshMicrophones"
+      ],
+      "keyboard": "passed"
+    },
+    {
+      "name": "settings",
+      "viewport": {
+        "width": 480,
+        "height": 900
+      },
+      "theme": "light",
+      "state": "settings",
+      "measure": {
+        "width": 380,
+        "height": 768,
+        "left": 92,
+        "right": 472,
+        "top": 100,
+        "bottom": 868,
+        "clientWidth": 363,
+        "scrollWidth": 363,
+        "clientHeight": 766,
+        "scrollHeight": 862,
+        "connectionButtonsSameRow": true,
+        "fields": []
+      },
+      "expandedMeasure": {
+        "width": 380,
+        "height": 768,
+        "left": 92,
+        "right": 472,
+        "top": 100,
+        "bottom": 868,
+        "clientWidth": 363,
+        "scrollWidth": 363,
+        "clientHeight": 766,
+        "scrollHeight": 1013,
+        "connectionButtonsSameRow": true,
+        "fields": []
+      },
+      "actions": [
+        "refreshMicrophones",
+        "refreshMicrophones"
+      ],
+      "keyboard": "passed"
+    },
+    {
+      "name": "narrow-settings",
+      "viewport": {
+        "width": 320,
+        "height": 900
+      },
+      "theme": "light",
+      "state": "settings",
+      "measure": {
+        "width": 304,
+        "height": 768,
+        "left": 8,
+        "right": 312,
+        "top": 100,
+        "bottom": 868,
+        "clientWidth": 287,
+        "scrollWidth": 287,
+        "clientHeight": 766,
+        "scrollHeight": 871,
+        "connectionButtonsSameRow": false,
+        "fields": []
+      },
+      "expandedMeasure": {
+        "width": 304,
+        "height": 768,
+        "left": 8,
+        "right": 312,
+        "top": 100,
+        "bottom": 868,
+        "clientWidth": 287,
+        "scrollWidth": 287,
+        "clientHeight": 766,
+        "scrollHeight": 1022,
+        "connectionButtonsSameRow": false,
+        "fields": []
+      },
+      "actions": [
+        "refreshMicrophones",
+        "refreshMicrophones"
+      ],
+      "keyboard": "passed"
+    },
+    {
+      "name": "custom",
+      "viewport": {
+        "width": 320,
+        "height": 900
+      },
+      "theme": "light",
+      "state": "custom",
+      "measure": {
+        "width": 304,
+        "height": 768,
+        "left": 8,
+        "right": 312,
+        "top": 100,
+        "bottom": 868,
+        "clientWidth": 287,
+        "scrollWidth": 287,
+        "clientHeight": 766,
+        "scrollHeight": 920,
+        "connectionButtonsSameRow": false,
+        "fields": []
+      },
+      "expandedMeasure": {
+        "width": 304,
+        "height": 768,
+        "left": 8,
+        "right": 312,
+        "top": 100,
+        "bottom": 868,
+        "clientWidth": 287,
+        "scrollWidth": 287,
+        "clientHeight": 766,
+        "scrollHeight": 1130,
+        "connectionButtonsSameRow": false,
+        "fields": []
+      },
+      "actions": [
+        "refreshMicrophones",
+        "refreshMicrophones"
+      ],
+      "keyboard": "passed"
+    },
+    {
+      "name": "preparing",
+      "viewport": {
+        "width": 480,
+        "height": 900
+      },
+      "theme": "light",
+      "state": "preparing",
+      "measure": {
+        "width": 380,
+        "height": 588.3125,
+        "left": 92,
+        "right": 472,
+        "top": 100,
+        "bottom": 688.3125,
+        "clientWidth": 363,
+        "scrollWidth": 363,
+        "clientHeight": 586,
+        "scrollHeight": 586,
+        "connectionButtonsSameRow": true,
+        "fields": []
+      },
+      "expandedMeasure": null,
+      "actions": [
+        "refreshMicrophones",
+        "refreshMicrophones"
+      ],
+      "keyboard": "passed"
+    },
+    {
+      "name": "recording",
+      "viewport": {
+        "width": 480,
+        "height": 900
+      },
+      "theme": "light",
+      "state": "recording",
+      "measure": {
+        "width": 380,
+        "height": 588.3125,
+        "left": 92,
+        "right": 472,
+        "top": 100,
+        "bottom": 688.3125,
+        "clientWidth": 363,
+        "scrollWidth": 363,
+        "clientHeight": 586,
+        "scrollHeight": 586,
+        "connectionButtonsSameRow": true,
+        "fields": []
+      },
+      "expandedMeasure": null,
+      "actions": [
+        "refreshMicrophones",
+        "refreshMicrophones"
+      ],
+      "keyboard": "passed"
+    },
+    {
+      "name": "transcribing",
+      "viewport": {
+        "width": 480,
+        "height": 900
+      },
+      "theme": "light",
+      "state": "transcribing",
+      "measure": {
+        "width": 380,
+        "height": 588.3125,
+        "left": 92,
+        "right": 472,
+        "top": 100,
+        "bottom": 688.3125,
+        "clientWidth": 363,
+        "scrollWidth": 363,
+        "clientHeight": 586,
+        "scrollHeight": 586,
+        "connectionButtonsSameRow": true,
+        "fields": []
+      },
+      "expandedMeasure": null,
+      "actions": [
+        "refreshMicrophones",
+        "refreshMicrophones"
+      ],
+      "keyboard": "passed"
+    },
+    {
+      "name": "error",
+      "viewport": {
+        "width": 320,
+        "height": 720
+      },
+      "theme": "light",
+      "state": "error",
+      "measure": {
+        "width": 304,
+        "height": 588,
+        "left": 8,
+        "right": 312,
+        "top": 100,
+        "bottom": 688,
+        "clientWidth": 287,
+        "scrollWidth": 287,
+        "clientHeight": 586,
+        "scrollHeight": 632,
+        "connectionButtonsSameRow": true,
+        "fields": []
+      },
+      "expandedMeasure": null,
+      "actions": [
+        "refreshMicrophones",
+        "refreshMicrophones"
+      ],
+      "keyboard": "passed"
+    },
+    {
+      "name": "conflict",
+      "viewport": {
+        "width": 380,
+        "height": 760
+      },
+      "theme": "dark",
+      "state": "conflict",
+      "measure": {
+        "width": 364,
+        "height": 628,
+        "left": 8,
+        "right": 372,
+        "top": 100,
+        "bottom": 728,
+        "clientWidth": 347,
+        "scrollWidth": 347,
+        "clientHeight": 626,
+        "scrollHeight": 728,
+        "connectionButtonsSameRow": true,
+        "fields": []
+      },
+      "expandedMeasure": null,
+      "actions": [
+        "refreshMicrophones",
+        "refreshMicrophones"
+      ],
+      "keyboard": "passed"
+    },
+    {
+      "name": "connecting",
+      "viewport": {
+        "width": 480,
+        "height": 720
+      },
+      "theme": "light",
+      "state": "connecting",
+      "measure": {
+        "width": 380,
+        "height": 560.515625,
+        "left": 92,
+        "right": 472,
+        "top": 100,
+        "bottom": 660.515625,
+        "clientWidth": 363,
+        "scrollWidth": 363,
+        "clientHeight": 559,
+        "scrollHeight": 559,
+        "connectionButtonsSameRow": true,
+        "fields": []
+      },
+      "expandedMeasure": null,
+      "actions": [
+        "refreshMicrophones",
+        "refreshMicrophones"
+      ],
+      "keyboard": "passed"
+    },
+    {
+      "name": "windows",
+      "viewport": {
+        "width": 480,
+        "height": 900
+      },
+      "theme": "light",
+      "state": "windows",
+      "measure": {
+        "width": 380,
+        "height": 635.90625,
+        "left": 92,
+        "right": 472,
+        "top": 100,
+        "bottom": 735.90625,
+        "clientWidth": 363,
+        "scrollWidth": 363,
+        "clientHeight": 634,
+        "scrollHeight": 634,
+        "connectionButtonsSameRow": true,
+        "fields": []
+      },
+      "expandedMeasure": null,
+      "actions": [
+        "refreshMicrophones",
+        "refreshMicrophones"
+      ],
+      "keyboard": "passed"
+    },
+    {
+      "name": "shortcut",
+      "viewport": {
+        "width": 480,
+        "height": 900
+      },
+      "theme": "light",
+      "state": "shortcut",
+      "measure": {
+        "width": 380,
+        "height": 635.90625,
+        "left": 92,
+        "right": 472,
+        "top": 100,
+        "bottom": 735.90625,
+        "clientWidth": 363,
+        "scrollWidth": 363,
+        "clientHeight": 634,
+        "scrollHeight": 634,
+        "connectionButtonsSameRow": true,
+        "fields": []
+      },
+      "expandedMeasure": null,
+      "actions": [
+        "refreshMicrophones",
+        "refreshMicrophones"
+      ],
+      "keyboard": "passed"
+    },
+    {
+      "name": "studio",
+      "viewport": {
+        "width": 480,
+        "height": 900
+      },
+      "theme": "dark",
+      "state": "studio",
+      "measure": {
+        "width": 380,
+        "height": 598.515625,
+        "left": 92,
+        "right": 472,
+        "top": 100,
+        "bottom": 698.515625,
+        "clientWidth": 363,
+        "scrollWidth": 363,
+        "clientHeight": 597,
+        "scrollHeight": 597,
+        "connectionButtonsSameRow": false,
+        "fields": []
+      },
+      "expandedMeasure": null,
+      "actions": [
+        "refreshMicrophones",
+        "refreshMicrophones"
+      ],
+      "keyboard": "passed"
+    },
+    {
+      "name": "short",
+      "viewport": {
+        "width": 480,
+        "height": 360
+      },
+      "theme": "light",
+      "state": "settings",
+      "measure": {
+        "width": 380,
+        "height": 228,
+        "left": 92,
+        "right": 472,
+        "top": 100,
+        "bottom": 328,
+        "clientWidth": 363,
+        "scrollWidth": 363,
+        "clientHeight": 226,
+        "scrollHeight": 862,
+        "connectionButtonsSameRow": true,
+        "fields": []
+      },
+      "expandedMeasure": {
+        "width": 380,
+        "height": 228,
+        "left": 92,
+        "right": 472,
+        "top": 100,
+        "bottom": 328,
+        "clientWidth": 363,
+        "scrollWidth": 363,
+        "clientHeight": 226,
+        "scrollHeight": 1013,
+        "connectionButtonsSameRow": true,
+        "fields": []
+      },
+      "actions": [
+        "refreshMicrophones",
+        "refreshMicrophones"
+      ],
+      "keyboard": "passed"
+    }
+  ]
+}

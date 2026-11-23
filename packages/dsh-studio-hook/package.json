@@ -1,0 +1,21 @@
+{
+  "name": "@abworks/dsh-studio-hook",
+  "version": "0.6.0-dev.4",
+  "type": "module",
+  "description": "AU05 Studio 协作模式：中文设置、显式启停、真实会话事件转发与直连互斥",
+  "license": "MIT",
+  "exports": { ".": "./index.js", "./core": "./core.js", "./mapping": "./mapping.js", "./client": "./client.js" },
+  "files": ["index.js", "core.js", "mapping.js", "sender.js", "verifier.js", "runtime.js", "input.js", "input-runtime.js", "feature-rpc.js", "mode-lease.js", "rpc.js", "client.js", "cordis.patch.yml", "README.md", "LICENSE"],
+  "peerDependencies": { "@deepseek-ai/dsh-typert-protocol": "^0.2.1-rc.3", "@abworks/dsh-plugin-au05": "0.6.0-dev.4" },
+  "dsh": {
+    "bundle": { "patch": "./cordis.patch.yml" },
+    "client": { "platform": "web", "immediately": true, "inject": [
+      "@deepseek-ai/dsh-client-ui-renderer", "@deepseek-ai/dsh-client-connection",
+      "@deepseek-ai/dsh-api-session-controller", "@deepseek-ai/dsh-client-ui-session",
+      "@deepseek-ai/dsh-client-ui-session-status",
+      "@deepseek-ai/dsh-client-ui-settings-general", "@deepseek-ai/dsh-api-gateway",
+      "@deepseek-ai/dsh-client-ui-conversation", "@deepseek-ai/dsh-client-ui-workspace",
+      "@deepseek-ai/dsh-api-workspace-controller", "@abworks/dsh-plugin-au05"
+    ] }
+  }
+}

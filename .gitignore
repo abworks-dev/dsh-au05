@@ -6,13 +6,13 @@ coverage/
 .env.*
 !.env.example
 *.log
+!docs/visual/**/*.log
 *.tsbuildinfo
 .DS_Store
 Thumbs.db
 playwright-report/
 test-results/
-# Local Impeccable engine and AU05 design QA scratch (not reviewable source).
-.dsh/skills/impeccable/scripts/bin/
-Temp/ui-system/
-.impeccable/screenshots/
-.impeccable/cache/
+# Local tool state and build/QA scratch: never reviewable source.
+.dsh/
+Temp/
+.impeccable/

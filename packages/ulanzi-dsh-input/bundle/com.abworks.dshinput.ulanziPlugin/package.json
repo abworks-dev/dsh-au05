@@ -1,0 +1,12 @@
+{
+  "name": "@abworks/ulanzi-dsh-input",
+  "version": "0.1.0",
+  "private": true,
+  "type": "commonjs",
+  "description": "Explicit-binding Ulanzi Studio input-only plugin",
+  "license": "MIT",
+  "engines": { "node": ">=20" },
+  "main": "service.js",
+  "files": ["manifest.json", "service.js", "service.cjs", "producer.cjs", "assets", "vendor", "README.md", "THIRD_PARTY_NOTICES.md"],
+  "scripts": { "bundle": "node build.cjs" }
+}

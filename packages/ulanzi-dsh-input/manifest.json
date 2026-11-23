@@ -1,0 +1,22 @@
+{
+  "Version": "0.1.0",
+  "Author": "ABWorks",
+  "Name": "DSH Studio Input",
+  "Description": "Explicit Studio action bindings; leased metadata-only DSH input. No HID, hotkeys, audio or automatic approval.",
+  "Icon": "assets/input.svg",
+  "Category": "DSH",
+  "CategoryIcon": "assets/input.svg",
+  "CodePath": "service.js",
+  "Type": "JavaScript",
+  "PrivateAPI": true,
+  "UUID": "com.abworks.ulanzistudio.dshinput",
+  "SupportedInMultiActions": false,
+  "Actions": [
+    { "Name": "DSH K1", "UUID": "com.abworks.ulanzistudio.dshinput.k1", "Tooltip": "Explicit K1 down/up binding; physical Task-key delivery must be verified separately", "Icon": "assets/input.svg", "state": 0, "States": [{ "Image": "assets/input.svg" }], "Controllers": ["Keypad"], "Devices": ["AU05"], "SupportedInMultiActions": false, "DisableAutomaticStates": true },
+    { "Name": "DSH K2", "UUID": "com.abworks.ulanzistudio.dshinput.k2", "Tooltip": "Explicit K2 down/up binding; never maps global shortcuts", "Icon": "assets/input.svg", "state": 0, "States": [{ "Image": "assets/input.svg" }], "Controllers": ["Keypad"], "Devices": ["AU05"], "SupportedInMultiActions": false, "DisableAutomaticStates": true },
+    { "Name": "DSH K3", "UUID": "com.abworks.ulanzistudio.dshinput.k3", "Tooltip": "Explicit K3 down/up binding; no Host-side approval execution", "Icon": "assets/input.svg", "state": 0, "States": [{ "Image": "assets/input.svg" }], "Controllers": ["Keypad"], "Devices": ["AU05"], "SupportedInMultiActions": false, "DisableAutomaticStates": true },
+    { "Name": "DSH Knob", "UUID": "com.abworks.ulanzistudio.dshinput.knob", "Tooltip": "Explicit knob down/up and left/right pulse binding", "Icon": "assets/input.svg", "state": 0, "States": [{ "Image": "assets/input.svg" }], "Controllers": ["Encoder"], "Devices": ["AU05"], "SupportedInMultiActions": false, "DisableAutomaticStates": true }
+  ],
+  "OS": [{ "Platform": "windows", "MinimumVersion": "10" }],
+  "Software": { "MinVersion": "3.4.8" }
+}

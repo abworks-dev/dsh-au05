@@ -1,0 +1,1247 @@
+{
+  "source": "E:\\Repository\\Github\\dsh-au05\\packages\\dsh-plugin\\client.js",
+  "sha256": "9cf3f672f50cc9c9c0fed5e5fdeffd10bd7bc345b1a7b01a7d92adf0b8e65746",
+  "fixture": "real productView and panelCss; synthetic controller; no DSH host",
+  "fixtureSha256": "a1bb1cf871b1a2cf1118306b0a3073a28caca0630d5e4405370679c3a1f305e6",
+  "browser": "156.0.8078.80",
+  "results": [
+    {
+      "name": "desktop",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "light",
+      "state": "default",
+      "measure": {
+        "width": 380,
+        "height": 570.515625,
+        "left": 1044,
+        "right": 1424,
+        "top": 100,
+        "bottom": 670.515625,
+        "clientWidth": 363,
+        "scrollWidth": 363,
+        "clientHeight": 569,
+        "scrollHeight": 569,
+        "connectionButtonsSameRow": true,
+        "mappingOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "mappingVisualOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "physicalOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "fields": [
+          {
+            "label": "麦克风",
+            "named": true,
+            "visible": false,
+            "sameRow": null
+          },
+          {
+            "label": "旋钮行为",
+            "named": true,
+            "visible": false,
+            "sameRow": null
+          },
+          {
+            "label": "灯光亮度（0–2）",
+            "named": true,
+            "visible": false,
+            "sameRow": null
+          }
+        ]
+      },
+      "expandedMeasure": null,
+      "actions": [
+        "refreshMicrophones",
+        "refreshMicrophones"
+      ],
+      "keyboard": "passed"
+    },
+    {
+      "name": "narrow",
+      "viewport": {
+        "width": 320,
+        "height": 720
+      },
+      "theme": "light",
+      "state": "default",
+      "measure": {
+        "width": 304,
+        "height": 533.203125,
+        "left": 8,
+        "right": 312,
+        "top": 100,
+        "bottom": 633.203125,
+        "clientWidth": 287,
+        "scrollWidth": 287,
+        "clientHeight": 531,
+        "scrollHeight": 531,
+        "connectionButtonsSameRow": true,
+        "mappingOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "mappingVisualOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "physicalOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "fields": [
+          {
+            "label": "麦克风",
+            "named": true,
+            "visible": false,
+            "sameRow": null
+          },
+          {
+            "label": "旋钮行为",
+            "named": true,
+            "visible": false,
+            "sameRow": null
+          },
+          {
+            "label": "灯光亮度（0–2）",
+            "named": true,
+            "visible": false,
+            "sameRow": null
+          }
+        ]
+      },
+      "expandedMeasure": null,
+      "actions": [
+        "refreshMicrophones",
+        "refreshMicrophones"
+      ],
+      "keyboard": "passed"
+    },
+    {
+      "name": "dark",
+      "viewport": {
+        "width": 1440,
+        "height": 900
+      },
+      "theme": "dark",
+      "state": "default",
+      "measure": {
+        "width": 380,
+        "height": 570.515625,
+        "left": 1044,
+        "right": 1424,
+        "top": 100,
+        "bottom": 670.515625,
+        "clientWidth": 363,
+        "scrollWidth": 363,
+        "clientHeight": 569,
+        "scrollHeight": 569,
+        "connectionButtonsSameRow": true,
+        "mappingOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "mappingVisualOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "physicalOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "fields": [
+          {
+            "label": "麦克风",
+            "named": true,
+            "visible": false,
+            "sameRow": null
+          },
+          {
+            "label": "旋钮行为",
+            "named": true,
+            "visible": false,
+            "sameRow": null
+          },
+          {
+            "label": "灯光亮度（0–2）",
+            "named": true,
+            "visible": false,
+            "sameRow": null
+          }
+        ]
+      },
+      "expandedMeasure": null,
+      "actions": [
+        "refreshMicrophones",
+        "refreshMicrophones"
+      ],
+      "keyboard": "passed"
+    },
+    {
+      "name": "settings",
+      "viewport": {
+        "width": 480,
+        "height": 900
+      },
+      "theme": "light",
+      "state": "settings",
+      "measure": {
+        "width": 380,
+        "height": 768,
+        "left": 92,
+        "right": 472,
+        "top": 100,
+        "bottom": 868,
+        "clientWidth": 363,
+        "scrollWidth": 363,
+        "clientHeight": 766,
+        "scrollHeight": 820,
+        "connectionButtonsSameRow": true,
+        "mappingOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "mappingVisualOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "physicalOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "fields": [
+          {
+            "label": "麦克风",
+            "named": true,
+            "visible": true,
+            "sameRow": true
+          },
+          {
+            "label": "旋钮行为",
+            "named": true,
+            "visible": true,
+            "sameRow": true
+          },
+          {
+            "label": "灯光亮度（0–2）",
+            "named": true,
+            "visible": false,
+            "sameRow": null
+          }
+        ]
+      },
+      "expandedMeasure": {
+        "width": 380,
+        "height": 768,
+        "left": 92,
+        "right": 472,
+        "top": 100,
+        "bottom": 868,
+        "clientWidth": 363,
+        "scrollWidth": 363,
+        "clientHeight": 766,
+        "scrollHeight": 975,
+        "connectionButtonsSameRow": true,
+        "mappingOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "mappingVisualOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "physicalOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "fields": [
+          {
+            "label": "麦克风",
+            "named": true,
+            "visible": true,
+            "sameRow": true
+          },
+          {
+            "label": "旋钮行为",
+            "named": true,
+            "visible": true,
+            "sameRow": true
+          },
+          {
+            "label": "灯光亮度（0–2）",
+            "named": true,
+            "visible": true,
+            "sameRow": true
+          }
+        ]
+      },
+      "actions": [
+        "refreshMicrophones",
+        "refreshMicrophones"
+      ],
+      "keyboard": "passed"
+    },
+    {
+      "name": "narrow-settings",
+      "viewport": {
+        "width": 320,
+        "height": 900
+      },
+      "theme": "light",
+      "state": "settings",
+      "measure": {
+        "width": 304,
+        "height": 768,
+        "left": 8,
+        "right": 312,
+        "top": 100,
+        "bottom": 868,
+        "clientWidth": 287,
+        "scrollWidth": 287,
+        "clientHeight": 766,
+        "scrollHeight": 790,
+        "connectionButtonsSameRow": true,
+        "mappingOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "mappingVisualOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "physicalOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "fields": [
+          {
+            "label": "麦克风",
+            "named": true,
+            "visible": true,
+            "sameRow": true
+          },
+          {
+            "label": "旋钮行为",
+            "named": true,
+            "visible": true,
+            "sameRow": true
+          },
+          {
+            "label": "灯光亮度（0–2）",
+            "named": true,
+            "visible": false,
+            "sameRow": null
+          }
+        ]
+      },
+      "expandedMeasure": {
+        "width": 304,
+        "height": 768,
+        "left": 8,
+        "right": 312,
+        "top": 100,
+        "bottom": 868,
+        "clientWidth": 287,
+        "scrollWidth": 287,
+        "clientHeight": 766,
+        "scrollHeight": 946,
+        "connectionButtonsSameRow": true,
+        "mappingOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "mappingVisualOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "physicalOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "fields": [
+          {
+            "label": "麦克风",
+            "named": true,
+            "visible": true,
+            "sameRow": true
+          },
+          {
+            "label": "旋钮行为",
+            "named": true,
+            "visible": true,
+            "sameRow": true
+          },
+          {
+            "label": "灯光亮度（0–2）",
+            "named": true,
+            "visible": true,
+            "sameRow": true
+          }
+        ]
+      },
+      "actions": [
+        "refreshMicrophones",
+        "refreshMicrophones"
+      ],
+      "keyboard": "passed"
+    },
+    {
+      "name": "custom",
+      "viewport": {
+        "width": 320,
+        "height": 900
+      },
+      "theme": "light",
+      "state": "custom",
+      "measure": {
+        "width": 304,
+        "height": 768,
+        "left": 8,
+        "right": 312,
+        "top": 100,
+        "bottom": 868,
+        "clientWidth": 287,
+        "scrollWidth": 287,
+        "clientHeight": 766,
+        "scrollHeight": 877,
+        "connectionButtonsSameRow": true,
+        "mappingOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "mappingVisualOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "physicalOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "fields": [
+          {
+            "label": "快捷键",
+            "named": true,
+            "visible": true,
+            "sameRow": true
+          },
+          {
+            "label": "旋钮行为",
+            "named": true,
+            "visible": true,
+            "sameRow": true
+          },
+          {
+            "label": "灯光亮度（0–2）",
+            "named": true,
+            "visible": false,
+            "sameRow": null
+          }
+        ]
+      },
+      "expandedMeasure": {
+        "width": 304,
+        "height": 768,
+        "left": 8,
+        "right": 312,
+        "top": 100,
+        "bottom": 868,
+        "clientWidth": 287,
+        "scrollWidth": 287,
+        "clientHeight": 766,
+        "scrollHeight": 1094,
+        "connectionButtonsSameRow": true,
+        "mappingOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "mappingVisualOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "physicalOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "fields": [
+          {
+            "label": "快捷键",
+            "named": true,
+            "visible": true,
+            "sameRow": true
+          },
+          {
+            "label": "旋钮行为",
+            "named": true,
+            "visible": true,
+            "sameRow": true
+          },
+          {
+            "label": "灯光亮度（0–2）",
+            "named": true,
+            "visible": true,
+            "sameRow": true
+          }
+        ]
+      },
+      "actions": [
+        "refreshMicrophones",
+        "refreshMicrophones"
+      ],
+      "keyboard": "passed"
+    },
+    {
+      "name": "preparing",
+      "viewport": {
+        "width": 480,
+        "height": 900
+      },
+      "theme": "light",
+      "state": "preparing",
+      "measure": {
+        "width": 380,
+        "height": 597.703125,
+        "left": 92,
+        "right": 472,
+        "top": 100,
+        "bottom": 697.703125,
+        "clientWidth": 363,
+        "scrollWidth": 363,
+        "clientHeight": 596,
+        "scrollHeight": 596,
+        "connectionButtonsSameRow": true,
+        "mappingOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "mappingVisualOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "physicalOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "fields": [
+          {
+            "label": "麦克风",
+            "named": true,
+            "visible": false,
+            "sameRow": null
+          },
+          {
+            "label": "旋钮行为",
+            "named": true,
+            "visible": false,
+            "sameRow": null
+          },
+          {
+            "label": "灯光亮度（0–2）",
+            "named": true,
+            "visible": false,
+            "sameRow": null
+          }
+        ]
+      },
+      "expandedMeasure": null,
+      "actions": [
+        "refreshMicrophones",
+        "refreshMicrophones"
+      ],
+      "keyboard": "passed"
+    },
+    {
+      "name": "recording",
+      "viewport": {
+        "width": 480,
+        "height": 900
+      },
+      "theme": "light",
+      "state": "recording",
+      "measure": {
+        "width": 380,
+        "height": 597.703125,
+        "left": 92,
+        "right": 472,
+        "top": 100,
+        "bottom": 697.703125,
+        "clientWidth": 363,
+        "scrollWidth": 363,
+        "clientHeight": 596,
+        "scrollHeight": 596,
+        "connectionButtonsSameRow": true,
+        "mappingOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "mappingVisualOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "physicalOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "fields": [
+          {
+            "label": "麦克风",
+            "named": true,
+            "visible": false,
+            "sameRow": null
+          },
+          {
+            "label": "旋钮行为",
+            "named": true,
+            "visible": false,
+            "sameRow": null
+          },
+          {
+            "label": "灯光亮度（0–2）",
+            "named": true,
+            "visible": false,
+            "sameRow": null
+          }
+        ]
+      },
+      "expandedMeasure": null,
+      "actions": [
+        "refreshMicrophones",
+        "refreshMicrophones"
+      ],
+      "keyboard": "passed"
+    },
+    {
+      "name": "transcribing",
+      "viewport": {
+        "width": 480,
+        "height": 900
+      },
+      "theme": "light",
+      "state": "transcribing",
+      "measure": {
+        "width": 380,
+        "height": 597.703125,
+        "left": 92,
+        "right": 472,
+        "top": 100,
+        "bottom": 697.703125,
+        "clientWidth": 363,
+        "scrollWidth": 363,
+        "clientHeight": 596,
+        "scrollHeight": 596,
+        "connectionButtonsSameRow": true,
+        "mappingOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "mappingVisualOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "physicalOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "fields": [
+          {
+            "label": "麦克风",
+            "named": true,
+            "visible": false,
+            "sameRow": null
+          },
+          {
+            "label": "旋钮行为",
+            "named": true,
+            "visible": false,
+            "sameRow": null
+          },
+          {
+            "label": "灯光亮度（0–2）",
+            "named": true,
+            "visible": false,
+            "sameRow": null
+          }
+        ]
+      },
+      "expandedMeasure": null,
+      "actions": [
+        "refreshMicrophones",
+        "refreshMicrophones"
+      ],
+      "keyboard": "passed"
+    },
+    {
+      "name": "error",
+      "viewport": {
+        "width": 320,
+        "height": 720
+      },
+      "theme": "light",
+      "state": "error",
+      "measure": {
+        "width": 304,
+        "height": 588,
+        "left": 8,
+        "right": 312,
+        "top": 100,
+        "bottom": 688,
+        "clientWidth": 287,
+        "scrollWidth": 287,
+        "clientHeight": 586,
+        "scrollHeight": 640,
+        "connectionButtonsSameRow": true,
+        "mappingOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "mappingVisualOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "physicalOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "fields": [
+          {
+            "label": "麦克风",
+            "named": true,
+            "visible": false,
+            "sameRow": null
+          },
+          {
+            "label": "旋钮行为",
+            "named": true,
+            "visible": false,
+            "sameRow": null
+          },
+          {
+            "label": "灯光亮度（0–2）",
+            "named": true,
+            "visible": false,
+            "sameRow": null
+          }
+        ]
+      },
+      "expandedMeasure": null,
+      "actions": [
+        "refreshMicrophones",
+        "refreshMicrophones"
+      ],
+      "keyboard": "passed"
+    },
+    {
+      "name": "conflict",
+      "viewport": {
+        "width": 380,
+        "height": 760
+      },
+      "theme": "dark",
+      "state": "conflict",
+      "measure": {
+        "width": 364,
+        "height": 628,
+        "left": 8,
+        "right": 372,
+        "top": 100,
+        "bottom": 728,
+        "clientWidth": 347,
+        "scrollWidth": 347,
+        "clientHeight": 626,
+        "scrollHeight": 743,
+        "connectionButtonsSameRow": true,
+        "mappingOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "mappingVisualOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "physicalOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "fields": [
+          {
+            "label": "麦克风",
+            "named": true,
+            "visible": false,
+            "sameRow": null
+          },
+          {
+            "label": "旋钮行为",
+            "named": true,
+            "visible": false,
+            "sameRow": null
+          },
+          {
+            "label": "灯光亮度（0–2）",
+            "named": true,
+            "visible": false,
+            "sameRow": null
+          }
+        ]
+      },
+      "expandedMeasure": null,
+      "actions": [
+        "refreshMicrophones",
+        "refreshMicrophones"
+      ],
+      "keyboard": "passed"
+    },
+    {
+      "name": "connecting",
+      "viewport": {
+        "width": 480,
+        "height": 720
+      },
+      "theme": "light",
+      "state": "connecting",
+      "measure": {
+        "width": 380,
+        "height": 562.515625,
+        "left": 92,
+        "right": 472,
+        "top": 100,
+        "bottom": 662.515625,
+        "clientWidth": 363,
+        "scrollWidth": 363,
+        "clientHeight": 561,
+        "scrollHeight": 561,
+        "connectionButtonsSameRow": true,
+        "mappingOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "mappingVisualOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "physicalOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "fields": [
+          {
+            "label": "麦克风",
+            "named": true,
+            "visible": false,
+            "sameRow": null
+          },
+          {
+            "label": "旋钮行为",
+            "named": true,
+            "visible": false,
+            "sameRow": null
+          },
+          {
+            "label": "灯光亮度（0–2）",
+            "named": true,
+            "visible": false,
+            "sameRow": null
+          }
+        ]
+      },
+      "expandedMeasure": null,
+      "actions": [
+        "refreshMicrophones",
+        "refreshMicrophones"
+      ],
+      "keyboard": "passed"
+    },
+    {
+      "name": "windows",
+      "viewport": {
+        "width": 480,
+        "height": 900
+      },
+      "theme": "light",
+      "state": "windows",
+      "measure": {
+        "width": 380,
+        "height": 644.078125,
+        "left": 92,
+        "right": 472,
+        "top": 100,
+        "bottom": 744.078125,
+        "clientWidth": 363,
+        "scrollWidth": 363,
+        "clientHeight": 642,
+        "scrollHeight": 642,
+        "connectionButtonsSameRow": true,
+        "mappingOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "mappingVisualOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "physicalOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "fields": [
+          {
+            "label": "旋钮行为",
+            "named": true,
+            "visible": false,
+            "sameRow": null
+          },
+          {
+            "label": "灯光亮度（0–2）",
+            "named": true,
+            "visible": false,
+            "sameRow": null
+          }
+        ]
+      },
+      "expandedMeasure": null,
+      "actions": [
+        "refreshMicrophones",
+        "refreshMicrophones"
+      ],
+      "keyboard": "passed"
+    },
+    {
+      "name": "shortcut",
+      "viewport": {
+        "width": 480,
+        "height": 900
+      },
+      "theme": "light",
+      "state": "shortcut",
+      "measure": {
+        "width": 380,
+        "height": 644.078125,
+        "left": 92,
+        "right": 472,
+        "top": 100,
+        "bottom": 744.078125,
+        "clientWidth": 363,
+        "scrollWidth": 363,
+        "clientHeight": 642,
+        "scrollHeight": 642,
+        "connectionButtonsSameRow": true,
+        "mappingOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "mappingVisualOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "physicalOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "fields": [
+          {
+            "label": "旋钮行为",
+            "named": true,
+            "visible": false,
+            "sameRow": null
+          },
+          {
+            "label": "灯光亮度（0–2）",
+            "named": true,
+            "visible": false,
+            "sameRow": null
+          }
+        ]
+      },
+      "expandedMeasure": null,
+      "actions": [
+        "refreshMicrophones",
+        "refreshMicrophones"
+      ],
+      "keyboard": "passed"
+    },
+    {
+      "name": "studio",
+      "viewport": {
+        "width": 480,
+        "height": 900
+      },
+      "theme": "dark",
+      "state": "studio",
+      "measure": {
+        "width": 380,
+        "height": 589.703125,
+        "left": 92,
+        "right": 472,
+        "top": 100,
+        "bottom": 689.703125,
+        "clientWidth": 363,
+        "scrollWidth": 363,
+        "clientHeight": 588,
+        "scrollHeight": 588,
+        "connectionButtonsSameRow": true,
+        "mappingOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "mappingVisualOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "physicalOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "fields": [
+          {
+            "label": "麦克风",
+            "named": true,
+            "visible": false,
+            "sameRow": null
+          },
+          {
+            "label": "旋钮行为",
+            "named": true,
+            "visible": false,
+            "sameRow": null
+          }
+        ]
+      },
+      "expandedMeasure": null,
+      "actions": [
+        "refreshMicrophones",
+        "refreshMicrophones"
+      ],
+      "keyboard": "passed"
+    },
+    {
+      "name": "short",
+      "viewport": {
+        "width": 480,
+        "height": 360
+      },
+      "theme": "light",
+      "state": "settings",
+      "measure": {
+        "width": 380,
+        "height": 228,
+        "left": 92,
+        "right": 472,
+        "top": 100,
+        "bottom": 328,
+        "clientWidth": 363,
+        "scrollWidth": 363,
+        "clientHeight": 226,
+        "scrollHeight": 820,
+        "connectionButtonsSameRow": true,
+        "mappingOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "mappingVisualOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "physicalOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "fields": [
+          {
+            "label": "麦克风",
+            "named": true,
+            "visible": true,
+            "sameRow": true
+          },
+          {
+            "label": "旋钮行为",
+            "named": true,
+            "visible": true,
+            "sameRow": true
+          },
+          {
+            "label": "灯光亮度（0–2）",
+            "named": true,
+            "visible": false,
+            "sameRow": null
+          }
+        ]
+      },
+      "expandedMeasure": {
+        "width": 380,
+        "height": 228,
+        "left": 92,
+        "right": 472,
+        "top": 100,
+        "bottom": 328,
+        "clientWidth": 363,
+        "scrollWidth": 363,
+        "clientHeight": 226,
+        "scrollHeight": 975,
+        "connectionButtonsSameRow": true,
+        "mappingOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "mappingVisualOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "physicalOrder": [
+          "knob",
+          "k1",
+          "k2",
+          "k3"
+        ],
+        "fields": [
+          {
+            "label": "麦克风",
+            "named": true,
+            "visible": true,
+            "sameRow": true
+          },
+          {
+            "label": "旋钮行为",
+            "named": true,
+            "visible": true,
+            "sameRow": true
+          },
+          {
+            "label": "灯光亮度（0–2）",
+            "named": true,
+            "visible": true,
+            "sameRow": true
+          }
+        ]
+      },
+      "actions": [
+        "refreshMicrophones",
+        "refreshMicrophones"
+      ],
+      "keyboard": "passed"
+    }
+  ]
+}

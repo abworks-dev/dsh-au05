@@ -1,0 +1,6 @@
+- insert:
+  - id: dsh-studio-hook
+    name: '@abworks/dsh-studio-hook'
+    config:
+      enabled: true
+      transport: studio
